@@ -1,8 +1,8 @@
 package service
 
 import (
-	disc "github.com/jeffjen/docker-ambassador/discovery"
 	proxy "github.com/jeffjen/docker-ambassador/proxy"
+	disc "github.com/jeffjen/go-discovery"
 
 	_ "github.com/Sirupsen/logrus"
 
@@ -17,22 +17,25 @@ func Configure(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		hbStr  = r.Form.Get("hb")
-		ttlStr = r.Form.Get("ttl")
-
 		heartbeat time.Duration
 		ttl       time.Duration
 	)
 
-	heartbeat, err := time.ParseDuration(hbStr)
-	if err != nil {
-		http.Error(w, "invalid arg", 400)
-		return
+	if hbStr := r.Form.Get("hb"); hbStr != "" {
+		hb, err := time.ParseDuration(hbStr)
+		if err != nil {
+			http.Error(w, "invalid arg", 400)
+			return
+		}
+		heartbeat = hb
 	}
-	ttl, err = time.ParseDuration(ttlStr)
-	if err != nil {
-		http.Error(w, "invalid arg", 400)
-		return
+	if ttlStr := r.Form.Get("ttl"); ttlStr != "" {
+		t, err := time.ParseDuration(ttlStr)
+		if err != nil {
+			http.Error(w, "invalid arg", 400)
+			return
+		}
+		ttl = t
 	}
 	if discovery := r.Form.Get("discovery"); discovery != "" {
 		// attach provided new discovery endpoint

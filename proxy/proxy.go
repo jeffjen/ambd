@@ -1,7 +1,7 @@
 package proxy
 
 import (
-	disc "github.com/jeffjen/docker-ambassador/discovery"
+	disc "github.com/jeffjen/go-discovery"
 	"github.com/jeffjen/go-proxy/proxy"
 
 	log "github.com/Sirupsen/logrus"

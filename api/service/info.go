@@ -1,7 +1,7 @@
 package service
 
 import (
-	disc "github.com/jeffjen/docker-ambassador/discovery"
+	disc "github.com/jeffjen/go-discovery"
 
 	_ "github.com/Sirupsen/logrus"
 

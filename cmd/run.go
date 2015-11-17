@@ -2,16 +2,14 @@ package cmd
 
 import (
 	api "github.com/jeffjen/docker-ambassador/api"
-	disc "github.com/jeffjen/docker-ambassador/discovery"
 	proxy "github.com/jeffjen/docker-ambassador/proxy"
+	dcli "github.com/jeffjen/go-discovery/cli"
 
 	log "github.com/Sirupsen/logrus"
 	cli "github.com/codegangsta/cli"
-)
 
-func init() {
-	disc.RegisterPath = "/srv/ambassador"
-}
+	"os"
+)
 
 func Ambassador(ctx *cli.Context) {
 	var (
@@ -22,7 +20,10 @@ func Ambassador(ctx *cli.Context) {
 		stop = make(chan struct{}, 1)
 	)
 
-	disc.Check(ctx)
+	if err := dcli.Before(ctx); err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
 
 	if proxyTargets != nil {
 		proxy.RunProxyDaemon(proxyTargets)
