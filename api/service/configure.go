@@ -2,6 +2,7 @@ package service
 
 import (
 	disc "github.com/jeffjen/docker-ambassador/discovery"
+	proxy "github.com/jeffjen/docker-ambassador/proxy"
 
 	_ "github.com/Sirupsen/logrus"
 
@@ -42,6 +43,8 @@ func Configure(w http.ResponseWriter, r *http.Request) {
 
 	// start new session
 	disc.Register(heartbeat, ttl)
+
+	proxy.Reload() // restart all proxy session
 
 	w.Write([]byte("done"))
 }

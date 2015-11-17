@@ -1,4 +1,4 @@
-package cmd
+package proxy
 
 import (
 	disc "github.com/jeffjen/docker-ambassador/discovery"
@@ -58,7 +58,7 @@ func Listen(iden string, meta *Info) {
 	if meta.Service != "" {
 		discovery := &proxy.DiscOptions{
 			Service:   meta.Service,
-			Endpoints: disc.Endpoints,
+			Endpoints: disc.Endpoints(),
 		}
 		handle, opt = proxy.Srv, &proxy.ConnOptions{
 			Net:       meta.Net,
@@ -89,12 +89,20 @@ func Listen(iden string, meta *Info) {
 	ProxyStore[iden] = meta
 }
 
+func Reload() {
+	for iden, meta := range ProxyStore {
+		delete(ProxyStore, iden)
+		meta.Cancel()
+		Listen(Genkey(""), meta)
+	}
+}
+
 func Genkey(seed string) (key string) {
 	key = fmt.Sprintf("%x", sha1.Sum([]byte(time.Now().String()+seed)))
 	return
 }
 
-func runProxyDaemon(targets []string) {
+func RunProxyDaemon(targets []string) {
 	for _, spec := range targets {
 		meta, err := parse(spec)
 		if err != nil {

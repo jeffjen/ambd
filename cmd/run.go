@@ -3,6 +3,7 @@ package cmd
 import (
 	api "github.com/jeffjen/docker-ambassador/api"
 	disc "github.com/jeffjen/docker-ambassador/discovery"
+	proxy "github.com/jeffjen/docker-ambassador/proxy"
 
 	log "github.com/Sirupsen/logrus"
 	cli "github.com/codegangsta/cli"
@@ -10,15 +11,6 @@ import (
 
 func init() {
 	disc.RegisterPath = "/srv/ambassador"
-}
-
-func runAPIEndpoint(addr string, stop chan<- struct{}) {
-	defer close(stop)
-
-	server := api.GetServer()
-
-	server.Addr = addr
-	log.Error(server.ListenAndServe())
 }
 
 func Ambassador(ctx *cli.Context) {
@@ -33,14 +25,14 @@ func Ambassador(ctx *cli.Context) {
 	disc.Check(ctx)
 
 	if proxyTargets != nil {
-		runProxyDaemon(proxyTargets)
+		proxy.RunProxyDaemon(proxyTargets)
 	} else {
 		log.Info("No proxy at startup")
 	}
 
 	if addr != "" {
 		log.WithFields(log.Fields{"addr": addr}).Info("API endpoint begin")
-		runAPIEndpoint(addr, stop)
+		api.RunAPIEndpoint(addr, stop)
 	} else {
 		log.Warning("API endpoint disabled")
 	}
