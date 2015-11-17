@@ -15,6 +15,7 @@ var (
 
 	Advertise string
 	Discovery string
+	Endpoints []string
 
 	Hearbeat time.Duration
 	TTL      time.Duration
@@ -31,8 +32,9 @@ func parse(endpoint string) []string {
 }
 
 func NewDiscovery() (client etcd.Client) {
+	Endpoints = parse(Discovery)
 	cfg := etcd.Config{
-		Endpoints:               parse(Discovery),
+		Endpoints:               Endpoints,
 		Transport:               etcd.DefaultTransport,
 		HeaderTimeoutPerRequest: time.Second,
 	}

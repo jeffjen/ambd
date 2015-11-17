@@ -11,7 +11,7 @@ import (
 func main() {
 	app := cli.NewApp()
 	app.Name = "docker-ambassador"
-	app.Usage = "Facilitate service consumer discovery and master election"
+	app.Usage = "Facilitate dynamic Ambassador pattern"
 	app.Authors = []cli.Author{
 		cli.Author{"Yi-Hung Jen", "yihungjen@gmail.com"},
 	}
