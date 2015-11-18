@@ -2,6 +2,7 @@ package api
 
 import (
 	srv "github.com/jeffjen/docker-ambassador/api/service"
+	d "github.com/jeffjen/go-discovery/info"
 
 	log "github.com/Sirupsen/logrus"
 
@@ -12,7 +13,7 @@ func init() {
 	mux = http.NewServeMux()
 	s = &http.Server{Handler: mux}
 
-	mux.HandleFunc("/info", srv.Info)
+	mux.HandleFunc("/info", d.Info)
 	mux.HandleFunc("/config", srv.Configure)
 }
 
