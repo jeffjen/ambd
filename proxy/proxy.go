@@ -7,13 +7,13 @@ import (
 	log "github.com/Sirupsen/logrus"
 	ctx "golang.org/x/net/context"
 
-	"crypto/sha1"
 	"encoding/json"
-	"fmt"
-	"time"
+	"errors"
 )
 
 var (
+	ErrProxyExist = errors.New("proxy exist")
+
 	Cancel      ctx.CancelFunc
 	RootContext ctx.Context
 
@@ -49,11 +49,15 @@ func parse(spec string) (*Info, error) {
 
 type ProxyFunc func(ctx.Context, *proxy.ConnOptions) error
 
-func Listen(iden string, meta *Info) {
+func Listen(meta *Info) error {
 	var (
 		handle ProxyFunc
 		opt    *proxy.ConnOptions
 	)
+
+	if _, ok := ProxyStore[meta.From]; ok {
+		return ErrProxyExist
+	}
 
 	if meta.Service != "" {
 		discovery := &proxy.DiscOptions{
@@ -86,29 +90,30 @@ func Listen(iden string, meta *Info) {
 		log.WithFields(fields).Warning(err)
 	}()
 
-	ProxyStore[iden] = meta
+	ProxyStore[meta.From] = meta
+
+	return nil
 }
 
 func Reload() {
-	for iden, meta := range ProxyStore {
-		delete(ProxyStore, iden)
+	for from, meta := range ProxyStore {
+		delete(ProxyStore, from)
 		meta.Cancel()
-		Listen(Genkey(""), meta)
+		Listen(meta)
 	}
-}
-
-func Genkey(seed string) (key string) {
-	key = fmt.Sprintf("%x", sha1.Sum([]byte(time.Now().String()+seed)))
-	return
 }
 
 func RunProxyDaemon(targets []string) {
 	for _, spec := range targets {
 		meta, err := parse(spec)
 		if err != nil {
-			log.Warning(err)
-		} else {
-			Listen(Genkey(""), meta)
+			log.WithFields(log.Fields{"err": err}).Warning("RunProxyDaemon")
+			continue
+		}
+		if err = Listen(meta); err != nil {
+			if err != ErrProxyExist {
+				log.WithFields(log.Fields{"err": err}).Warning("RunProxyDaemon")
+			}
 		}
 	}
 }

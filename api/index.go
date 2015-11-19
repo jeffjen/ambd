@@ -15,6 +15,7 @@ func init() {
 
 	mux.HandleFunc("/info", d.Info)
 	mux.HandleFunc("/config", srv.Configure)
+	mux.HandleFunc("/proxy", srv.ProxyHelper)
 }
 
 func RunAPIEndpoint(addr string, stop chan<- struct{}) {
