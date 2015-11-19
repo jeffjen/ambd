@@ -36,7 +36,7 @@ type Info struct {
 	// read from discovery
 	Service string `json:"srv,omitempty"`
 
-	Cancel ctx.CancelFunc `json:-`
+	Cancel ctx.CancelFunc `json:"-"`
 }
 
 func parse(spec string) (*Info, error) {
