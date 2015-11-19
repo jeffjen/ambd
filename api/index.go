@@ -14,7 +14,7 @@ func init() {
 	s = &http.Server{Handler: mux}
 
 	vmux := &VarServeMux{}
-	vmux.HandleFunc(`/proxy/(\w+)`, srv.ProxyRemove)
+	vmux.HandleFunc(`/proxy/(.+)`, srv.ProxyRemove)
 
 	mux.HandleFunc("/info", d.Info)
 	mux.HandleFunc("/config", srv.Configure)
