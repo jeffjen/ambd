@@ -3,6 +3,7 @@ MAINTAINER YI-HUNG JEN <yihungjen@gmail.com>
 
 COPY ca-certificates.crt /etc/ssl/certs/
 COPY docker-ambassador /
+COPY ambctl/ambctl /
 ENTRYPOINT ["/docker-ambassador"]
 CMD ["--help"]
 
