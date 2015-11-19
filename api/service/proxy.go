@@ -37,3 +37,21 @@ func ProxyHelper(w http.ResponseWriter, r *http.Request) {
 
 	w.Write([]byte("done"))
 }
+
+func ProxyRemove(w http.ResponseWriter, r *http.Request, args []string) {
+	if err := common("DELETE", r); err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	var From string = args[0]
+
+	if meta, ok := proxy.ProxyStore[From]; ok {
+		meta.Cancel()
+		w.Write([]byte("done"))
+	} else {
+		http.Error(w, "not found", 404)
+	}
+
+	return
+}

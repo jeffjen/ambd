@@ -13,9 +13,13 @@ func init() {
 	mux = http.NewServeMux()
 	s = &http.Server{Handler: mux}
 
+	vmux := &VarServeMux{}
+	vmux.HandleFunc(`/proxy/(\w+)`, srv.ProxyRemove)
+
 	mux.HandleFunc("/info", d.Info)
 	mux.HandleFunc("/config", srv.Configure)
 	mux.HandleFunc("/proxy", srv.ProxyHelper)
+	mux.Handle("/proxy/", vmux)
 }
 
 func RunAPIEndpoint(addr string, stop chan<- struct{}) {
