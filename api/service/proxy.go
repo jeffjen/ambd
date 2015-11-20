@@ -47,6 +47,7 @@ func ProxyRemove(w http.ResponseWriter, r *http.Request, args []string) {
 	var From string = args[0]
 
 	if meta, ok := proxy.ProxyStore[From]; ok {
+		delete(proxy.ProxyStore, meta.From)
 		meta.Cancel()
 		w.Write([]byte("done"))
 	} else {
