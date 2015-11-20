@@ -32,6 +32,8 @@ func ProxyHelper(w http.ResponseWriter, r *http.Request) {
 			log.WithFields(log.Fields{"err": err}).Warning("proxy failed")
 			http.Error(w, "internal server error", 500)
 			return
+		} else {
+			log.WithFields(log.Fields{"err": err}).Warning("proxy failed")
 		}
 	}
 
@@ -47,7 +49,7 @@ func ProxyRemove(w http.ResponseWriter, r *http.Request, args []string) {
 	var From string = args[0]
 
 	if meta, ok := proxy.ProxyStore[From]; ok {
-		delete(proxy.ProxyStore, meta.From)
+		delete(proxy.ProxyStore, From)
 		meta.Cancel()
 		w.Write([]byte("done"))
 	} else {
