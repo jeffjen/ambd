@@ -48,5 +48,12 @@ func create(ctx *cli.Context) {
 		} else {
 			fmt.Println("done")
 		}
+	} else if srv := ctx.String("srv"); srv != "" {
+		if err := CreateReq(pxy.Info{Net: Net, From: From, Service: srv}); err != nil {
+			fmt.Fprintln(os.Stderr, "failed request")
+			os.Exit(1)
+		} else {
+			fmt.Println("done")
+		}
 	}
 }
