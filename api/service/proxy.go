@@ -1,6 +1,7 @@
 package service
 
 import (
+	api "github.com/jeffjen/docker-ambassador/api"
 	proxy "github.com/jeffjen/docker-ambassador/proxy"
 
 	log "github.com/Sirupsen/logrus"
@@ -56,5 +57,25 @@ func ProxyRemove(w http.ResponseWriter, r *http.Request, args []string) {
 		http.Error(w, "not found", 404)
 	}
 
+	return
+}
+
+func ProxyList(w http.ResponseWriter, r *http.Request) {
+	if err := common("GET", r); err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	var (
+		listing = make([]*proxy.Info, 0)
+
+		enc = json.NewEncoder(api.NewStreamWriter(w))
+	)
+
+	for _, v := range proxy.ProxyStore {
+		listing = append(listing, v)
+	}
+
+	enc.Encode(listing)
 	return
 }

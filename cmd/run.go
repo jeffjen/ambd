@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	api "github.com/jeffjen/docker-ambassador/api"
 	proxy "github.com/jeffjen/docker-ambassador/proxy"
+	web "github.com/jeffjen/docker-ambassador/web"
 	dcli "github.com/jeffjen/go-discovery/cli"
 
 	log "github.com/Sirupsen/logrus"
@@ -33,7 +33,7 @@ func Ambassador(ctx *cli.Context) {
 
 	if addr != "" {
 		log.WithFields(log.Fields{"addr": addr}).Info("API endpoint begin")
-		api.RunAPIEndpoint(addr, stop)
+		web.RunAPIEndpoint(addr, stop)
 	} else {
 		log.Warning("API endpoint disabled")
 	}

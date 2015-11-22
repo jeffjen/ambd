@@ -37,3 +37,8 @@ func NewStreamWriter(w http.ResponseWriter) io.Writer {
 		return w
 	}
 }
+
+func init() {
+	mux = http.NewServeMux()
+	s = &http.Server{Handler: mux}
+}

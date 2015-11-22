@@ -16,6 +16,7 @@ func NewListCmd() cli.Command {
 }
 
 func list(ctx *cli.Context) {
-	fmt.Fprintln(os.Stderr, "Not yet implemented")
-	os.Exit(1)
+	if err := ListProxyReq(); err != nil {
+		fmt.Fprintln(os.Stderr, "unable to reach server")
+	}
 }

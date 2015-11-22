@@ -15,6 +15,8 @@ const (
 	Endpoint = "http://localhost:29091/info"
 
 	EndpointProxy = "http://localhost:29091/proxy"
+
+	EndpointProxyList = "http://localhost:29091/proxy/list"
 )
 
 func CreateReq(pflag pxy.Info) error {
@@ -62,6 +64,25 @@ func CancelReq(src string) error {
 
 func InfoReq() error {
 	resp, err := http.Get(Endpoint)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	var out, inn bytes.Buffer
+
+	_, err = inn.ReadFrom(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	json.Indent(&out, inn.Bytes(), "", "    ")
+	out.WriteTo(os.Stdout)
+	return nil
+}
+
+func ListProxyReq() error {
+	resp, err := http.Get(EndpointProxyList)
 	if err != nil {
 		return err
 	}
