@@ -1,6 +1,8 @@
 package proxy
 
 import (
+	"github.com/jeffjen/go-libkv/libkv"
+
 	disc "github.com/jeffjen/go-discovery"
 	"github.com/jeffjen/go-proxy/proxy"
 
@@ -17,14 +19,16 @@ var (
 	Cancel      ctx.CancelFunc
 	RootContext ctx.Context
 
-	ProxyStore map[string]*Info
+	Store *libkv.Store
 )
 
 func init() {
 	RootContext, Cancel = ctx.WithCancel(ctx.Background())
 
-	ProxyStore = make(map[string]*Info)
+	Store = libkv.NewStore()
 }
+
+type ProxyFunc func(ctx.Context, *proxy.ConnOptions) error
 
 type Info struct {
 	Net  string `json:"net"`
@@ -36,44 +40,32 @@ type Info struct {
 	// read from discovery
 	Service string `json:"srv,omitempty"`
 
+	// Proxy handler
+	handle ProxyFunc          `json:"-"`
+	opts   *proxy.ConnOptions `json:"-"`
+
+	// Abort proxy handler
 	Cancel ctx.CancelFunc `json:"-"`
 }
 
-func parse(spec string) (*Info, error) {
-	var i Info
-	if err := json.Unmarshal([]byte(spec), &i); err != nil {
-		return nil, err
-	}
-	return &i, nil
-}
-
-type ProxyFunc func(ctx.Context, *proxy.ConnOptions) error
-
-func Listen(meta *Info) error {
-	var (
-		handle ProxyFunc
-		opt    *proxy.ConnOptions
-	)
-
-	if _, ok := ProxyStore[meta.From]; ok {
-		return ErrProxyExist
-	}
-
-	if meta.Service != "" {
+func (i *Info) Listen() {
+	if i.Service != "" {
 		discovery := &proxy.DiscOptions{
-			Service:   meta.Service,
+			Service:   i.Service,
 			Endpoints: disc.Endpoints(),
 		}
-		handle, opt = proxy.Srv, &proxy.ConnOptions{
-			Net:       meta.Net,
-			From:      meta.From,
+		i.handle = proxy.Srv
+		i.opts = &proxy.ConnOptions{
+			Net:       i.Net,
+			From:      i.From,
 			Discovery: discovery,
 		}
-	} else if len(meta.To) != 0 {
-		handle, opt = proxy.To, &proxy.ConnOptions{
-			Net:  meta.Net,
-			From: meta.From,
-			To:   meta.To,
+	} else if len(i.To) != 0 {
+		i.handle = proxy.To
+		i.opts = &proxy.ConnOptions{
+			Net:  i.Net,
+			From: i.From,
+			To:   i.To,
 		}
 	}
 
@@ -81,26 +73,39 @@ func Listen(meta *Info) error {
 	order, abort := ctx.WithCancel(RootContext)
 
 	// This proxy shall have its isolated abort feature
-	meta.Cancel = abort
+	i.Cancel = abort
 
-	fields := log.Fields{"Net": meta.Net, "From": meta.From, "To": meta.To, "Service": meta.Service}
+	fields := log.Fields{"Net": i.Net, "From": i.From, "To": i.To, "Service": i.Service}
 	go func() {
 		log.WithFields(fields).Info("begin")
-		err := handle(order, opt)
+		err := i.handle(order, i.opts)
 		log.WithFields(fields).Warning(err)
 	}()
+}
 
-	ProxyStore[meta.From] = meta
+func parse(spec string) (*Info, error) {
+	var i = new(Info)
+	if err := json.Unmarshal([]byte(spec), i); err != nil {
+		return nil, err
+	}
+	return i, nil
+}
 
+func Listen(meta *Info) error {
+	if Store.Get(meta.From) != nil {
+		return ErrProxyExist
+	}
+	meta.Listen()
+	Store.Set(meta.From, meta)
 	return nil
 }
 
 func Reload() {
-	for from, meta := range ProxyStore {
-		delete(ProxyStore, from)
+	Store.IterateFunc(func(iden string, x interface{}) {
+		meta := x.(*Info)
 		meta.Cancel()
-		Listen(meta)
-	}
+		meta.Listen()
+	})
 }
 
 func RunProxyDaemon(targets []string) {

@@ -49,9 +49,10 @@ func ProxyRemove(w http.ResponseWriter, r *http.Request, args []string) {
 
 	var From string = args[0]
 
-	if meta, ok := proxy.ProxyStore[From]; ok {
-		delete(proxy.ProxyStore, From)
+	if x := proxy.Store.Get(From); x != nil {
+		meta := x.(*proxy.Info)
 		meta.Cancel()
+		proxy.Store.Del(From)
 		w.Write([]byte("done"))
 	} else {
 		http.Error(w, "not found", 404)
@@ -72,9 +73,10 @@ func ProxyList(w http.ResponseWriter, r *http.Request) {
 		enc = json.NewEncoder(api.NewStreamWriter(w))
 	)
 
-	for _, v := range proxy.ProxyStore {
-		listing = append(listing, v)
-	}
+	proxy.Store.IterateFunc(func(iden string, x interface{}) {
+		meta := x.(*proxy.Info)
+		listing = append(listing, meta)
+	})
 
 	enc.Encode(listing)
 	return
