@@ -16,6 +16,8 @@ import (
 var (
 	ErrProxyExist = errors.New("proxy exist")
 
+	ErrMissingName = errors.New("proxy name empty")
+
 	Cancel      ctx.CancelFunc
 	RootContext ctx.Context
 
@@ -31,8 +33,11 @@ func init() {
 type ProxyFunc func(ctx.Context, *proxy.ConnOptions) error
 
 type Info struct {
-	Net  string `json:"net"`
-	From string `json:"src"`
+	Name string `json:"name"`
+
+	Net       string   `json:"net"`
+	From      string   `json:"src"`
+	FromRange []string `json:"range"`
 
 	// static assignment
 	To []string `json:"dst,omitempty"`
@@ -54,14 +59,22 @@ func (i *Info) Listen() {
 			Service:   i.Service,
 			Endpoints: disc.Endpoints(),
 		}
-		i.handle = proxy.Srv
+		if len(i.FromRange) != 0 {
+			i.handle = proxy.ClusterSrv
+		} else {
+			i.handle = proxy.Srv
+		}
 		i.opts = &proxy.ConnOptions{
 			Net:       i.Net,
 			From:      i.From,
 			Discovery: discovery,
 		}
 	} else if len(i.To) != 0 {
-		i.handle = proxy.To
+		if len(i.FromRange) != 0 {
+			i.handle = proxy.ClusterTo
+		} else {
+			i.handle = proxy.To
+		}
 		i.opts = &proxy.ConnOptions{
 			Net:  i.Net,
 			From: i.From,
@@ -75,7 +88,7 @@ func (i *Info) Listen() {
 	// This proxy shall have its isolated abort feature
 	i.Cancel = abort
 
-	fields := log.Fields{"Net": i.Net, "From": i.From, "To": i.To, "Service": i.Service}
+	fields := log.Fields{"Name": i.Name, "Net": i.Net, "From": i.From, "To": i.To, "Service": i.Service}
 	go func() {
 		log.WithFields(fields).Info("begin")
 		err := i.handle(order, i.opts)
@@ -88,15 +101,18 @@ func parse(spec string) (*Info, error) {
 	if err := json.Unmarshal([]byte(spec), i); err != nil {
 		return nil, err
 	}
+	if i.Name == "" {
+		return nil, ErrMissingName
+	}
 	return i, nil
 }
 
 func Listen(meta *Info) error {
-	if Store.Get(meta.From) != nil {
+	if Store.Get(meta.Name) != nil {
 		return ErrProxyExist
 	}
 	meta.Listen()
-	Store.Set(meta.From, meta)
+	Store.Set(meta.Name, meta)
 	return nil
 }
 

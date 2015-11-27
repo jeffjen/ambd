@@ -27,6 +27,11 @@ func ProxyHelper(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad proxy spec", 400)
 		return
 	}
+	if meta.Name == "" {
+		log.WithFields(log.Fields{"err": proxy.ErrMissingName}).Warning("bad proxy spec")
+		http.Error(w, "bad proxy spec", 400)
+		return
+	}
 
 	if err := proxy.Listen(meta); err != nil {
 		if err != proxy.ErrProxyExist {
@@ -47,12 +52,12 @@ func ProxyRemove(w http.ResponseWriter, r *http.Request, args []string) {
 		return
 	}
 
-	var From string = args[0]
+	var Name string = args[0]
 
-	if x := proxy.Store.Get(From); x != nil {
+	if x := proxy.Store.Get(Name); x != nil {
 		meta := x.(*proxy.Info)
 		meta.Cancel()
-		proxy.Store.Del(From)
+		proxy.Store.Del(Name)
 		w.Write([]byte("done"))
 	} else {
 		http.Error(w, "not found", 404)
