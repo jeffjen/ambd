@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/jeffjen/docker-ambassador/ambctl/command"
-
 	cli "github.com/codegangsta/cli"
 
 	"os"
@@ -16,10 +14,10 @@ func main() {
 		cli.Author{"Yi-Hung Jen", "yihungjen@gmail.com"},
 	}
 	app.Commands = []cli.Command{
-		command.NewListCmd(),
-		command.NewCreateCmd(),
-		command.NewCancelCmd(),
-		command.NewInfoCmd(),
+		NewListCmd(),
+		NewCreateCmd(),
+		NewCancelCmd(),
+		NewInfoCmd(),
 	}
 	app.Run(os.Args)
 }

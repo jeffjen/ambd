@@ -1,7 +1,7 @@
-package command
+package main
 
 import (
-	pxy "github.com/jeffjen/docker-ambassador/proxy"
+	arg "github.com/jeffjen/docker-ambassador/ambctl/arg"
 
 	"bytes"
 	"encoding/json"
@@ -19,7 +19,7 @@ const (
 	EndpointProxyList = "http://localhost:29091/proxy/list"
 )
 
-func CreateReq(pflag pxy.Info) error {
+func CreateReq(pflag arg.Info) error {
 	var buf = new(bytes.Buffer)
 	if err := json.NewEncoder(buf).Encode(pflag); err != nil {
 		return err
