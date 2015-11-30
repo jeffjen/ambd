@@ -45,40 +45,43 @@ type Info struct {
 	// read from discovery
 	Service string `json:"srv,omitempty"`
 
-	// Proxy handler
-	handle ProxyFunc          `json:"-"`
-	opts   *proxy.ConnOptions `json:"-"`
-
 	// Abort proxy handler
 	Cancel ctx.CancelFunc `json:"-"`
 }
 
 func (i *Info) Listen() {
+	var (
+		handle ProxyFunc
+		opts   *proxy.ConnOptions
+	)
+
 	if i.Service != "" {
 		discovery := &proxy.DiscOptions{
 			Service:   i.Service,
 			Endpoints: disc.Endpoints(),
 		}
-		if len(i.FromRange) != 0 {
-			i.handle = proxy.ClusterSrv
-		} else {
-			i.handle = proxy.Srv
-		}
-		i.opts = &proxy.ConnOptions{
+		opts = &proxy.ConnOptions{
 			Net:       i.Net,
-			From:      i.From,
 			Discovery: discovery,
 		}
-	} else if len(i.To) != 0 {
 		if len(i.FromRange) != 0 {
-			i.handle = proxy.ClusterTo
+			handle = proxy.ClusterSrv
+			opts.FromRange = i.FromRange
 		} else {
-			i.handle = proxy.To
+			handle = proxy.Srv
+			opts.From = i.From
 		}
-		i.opts = &proxy.ConnOptions{
-			Net:  i.Net,
-			From: i.From,
-			To:   i.To,
+	} else if len(i.To) != 0 {
+		opts = &proxy.ConnOptions{
+			Net: i.Net,
+			To:  i.To,
+		}
+		if len(i.FromRange) != 0 {
+			handle = proxy.ClusterTo
+			opts.FromRange = i.FromRange
+		} else {
+			handle = proxy.To
+			opts.From = i.From
 		}
 	}
 
@@ -88,10 +91,10 @@ func (i *Info) Listen() {
 	// This proxy shall have its isolated abort feature
 	i.Cancel = abort
 
-	fields := log.Fields{"Name": i.Name, "Net": i.Net, "From": i.From, "To": i.To, "Service": i.Service}
+	fields := log.Fields{"Name": i.Name, "Net": i.Net, "From": i.From, "Range": i.FromRange, "To": i.To, "Service": i.Service}
 	go func() {
 		log.WithFields(fields).Info("begin")
-		err := i.handle(order, i.opts)
+		err := handle(order, opts)
 		log.WithFields(fields).Warning(err)
 	}()
 }
