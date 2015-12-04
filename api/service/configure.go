@@ -50,10 +50,41 @@ func Configure(w http.ResponseWriter, r *http.Request) {
 	if proxy.ConfigReset != nil {
 		// abort config
 		proxy.ConfigReset()
-		// reload config setting
-		proxy.Follow()
-		proxy.RunProxyDaemon()
 	}
+
+	// reload config setting
+	proxy.Follow()
+	proxy.RunProxyDaemon()
+
+	w.Write([]byte("done"))
+}
+
+func Follow(w http.ResponseWriter, r *http.Request) {
+	if err := common("PUT", r); err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	var (
+		proxycfg = r.Form.Get("key")
+	)
+
+	if proxycfg == "" {
+		http.Error(w, "Bad Request", 400)
+		return
+	}
+
+	// Reassin proxy config key
+	proxy.ProxyConfigKey = proxycfg
+
+	if proxy.ConfigReset != nil {
+		// abort config
+		proxy.ConfigReset()
+	}
+
+	// reload config setting
+	proxy.Follow()
+	proxy.RunProxyDaemon()
 
 	w.Write([]byte("done"))
 }

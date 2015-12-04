@@ -16,6 +16,7 @@ func init() {
 	api.GetServeMux().HandleFunc("/config", srv.Configure)
 	api.GetServeMux().HandleFunc("/proxy", srv.ProxyHelper)
 	api.GetServeMux().HandleFunc("/proxy/list", srv.ProxyList)
+	api.GetServeMux().HandleFunc("/proxy/app-config", srv.Follow)
 	api.GetServeMux().Handle("/proxy/", vmux)
 }
 

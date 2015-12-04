@@ -18,6 +18,7 @@ func main() {
 		NewCreateCmd(),
 		NewCancelCmd(),
 		NewInfoCmd(),
+		NewConfigCmd(),
 	}
 	app.Run(os.Args)
 }

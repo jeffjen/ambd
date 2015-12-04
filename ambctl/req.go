@@ -62,6 +62,28 @@ func CancelReq(src string) error {
 	}
 }
 
+func ConfigReq(proxycfg string) error {
+	var cli = new(http.Client)
+	req, err := http.NewRequest("PUT", EndpointProxy+"/app-config?key="+proxycfg, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := cli.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	var ret = new(bytes.Buffer)
+	io.Copy(ret, resp.Body)
+
+	if ans := ret.String(); ans != "done" {
+		return errors.New(ans)
+	} else {
+		return nil
+	}
+}
+
 func InfoReq() error {
 	resp, err := http.Get(Endpoint)
 	if err != nil {
