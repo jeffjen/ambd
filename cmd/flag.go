@@ -12,6 +12,10 @@ var (
 			Name:  "addr",
 			Usage: "API endpoint for admin",
 		},
+		cli.StringFlag{
+			Name:  "proxycfg",
+			Usage: "Proxy specification from config key",
+		},
 		cli.StringSliceFlag{
 			Name:  "proxy",
 			Usage: "Proxy specification on startup",

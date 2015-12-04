@@ -15,6 +15,8 @@ func Ambassador(ctx *cli.Context) {
 	var (
 		addr = ctx.String("addr")
 
+		proxycfg = ctx.String("proxycfg")
+
 		proxyTargets = ctx.StringSlice("proxy")
 
 		stop = make(chan struct{}, 1)
@@ -25,10 +27,14 @@ func Ambassador(ctx *cli.Context) {
 		os.Exit(1)
 	}
 
+	if proxycfg != "" {
+		proxy.ProxyConfigKey = proxycfg
+		proxy.Follow()
+	}
+
 	if proxyTargets != nil {
-		proxy.RunProxyDaemon(proxyTargets)
-	} else {
-		log.Info("No proxy at startup")
+		proxy.Targets = proxyTargets
+		proxy.RunProxyDaemon()
 	}
 
 	if addr != "" {

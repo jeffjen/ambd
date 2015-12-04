@@ -47,7 +47,13 @@ func Configure(w http.ResponseWriter, r *http.Request) {
 	// start new session
 	disc.Register(heartbeat, ttl)
 
-	proxy.Reload() // restart all proxy session
+	if proxy.ConfigReset != nil {
+		// abort config
+		proxy.ConfigReset()
+		// reload config setting
+		proxy.Follow()
+		proxy.RunProxyDaemon()
+	}
 
 	w.Write([]byte("done"))
 }

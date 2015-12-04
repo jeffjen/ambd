@@ -18,6 +18,8 @@ var (
 
 	ErrMissingName = errors.New("proxy name empty")
 
+	Targets []string
+
 	Cancel      ctx.CancelFunc
 	RootContext ctx.Context
 
@@ -119,16 +121,8 @@ func Listen(meta *Info) error {
 	return nil
 }
 
-func Reload() {
-	for it := range Store.IterateR() {
-		meta := it.X.(*Info)
-		meta.Cancel()
-		meta.Listen()
-	}
-}
-
-func RunProxyDaemon(targets []string) {
-	for _, spec := range targets {
+func RunProxyDaemon() {
+	for _, spec := range Targets {
 		meta, err := parse(spec)
 		if err != nil {
 			log.WithFields(log.Fields{"err": err}).Warning("RunProxyDaemon")
