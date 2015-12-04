@@ -77,7 +77,6 @@ func create(ctx *cli.Context) {
 		for idx, one_from := range from {
 			FromRange[idx] = one_from
 		}
-		fmt.Println(FromRange)
 	}
 	if len(FromRange) == 0 {
 		fmt.Fprintln(os.Stderr, "missing required flag --src")
