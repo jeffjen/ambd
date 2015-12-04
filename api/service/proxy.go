@@ -78,10 +78,10 @@ func ProxyList(w http.ResponseWriter, r *http.Request) {
 		enc = json.NewEncoder(api.NewStreamWriter(w))
 	)
 
-	proxy.Store.IterateFunc(func(iden string, x interface{}) {
-		meta := x.(*proxy.Info)
+	for it := range proxy.Store.IterateR() {
+		meta := it.X.(*proxy.Info)
 		listing = append(listing, meta)
-	})
+	}
 
 	enc.Encode(listing)
 	return

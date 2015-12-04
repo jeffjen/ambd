@@ -120,11 +120,11 @@ func Listen(meta *Info) error {
 }
 
 func Reload() {
-	Store.IterateFunc(func(iden string, x interface{}) {
-		meta := x.(*Info)
+	for it := range Store.IterateR() {
+		meta := it.X.(*Info)
 		meta.Cancel()
 		meta.Listen()
-	})
+	}
 }
 
 func RunProxyDaemon(targets []string) {
