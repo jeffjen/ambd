@@ -3,28 +3,33 @@ package main
 import (
 	arg "github.com/jeffjen/docker-ambassador/ambctl/arg"
 
+	cli "github.com/codegangsta/cli"
+
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
 )
 
-const (
-	Endpoint = "http://localhost:29091/info"
-
-	EndpointProxy = "http://localhost:29091/proxy"
-
-	EndpointProxyList = "http://localhost:29091/proxy/list"
+var (
+	Endpoint string
 )
+
+func endpoint(ctx *cli.Context) error {
+	var host string = ctx.String("host")
+	Endpoint = fmt.Sprintf("http://%s", host)
+	return nil
+}
 
 func CreateReq(pflag arg.Info) error {
 	var buf = new(bytes.Buffer)
 	if err := json.NewEncoder(buf).Encode(pflag); err != nil {
 		return err
 	}
-	resp, err := http.Post(EndpointProxy, "application/json", buf)
+	resp, err := http.Post(Endpoint+"/proxy", "application/json", buf)
 	if err != nil {
 		return err
 	}
@@ -42,7 +47,7 @@ func CreateReq(pflag arg.Info) error {
 
 func CancelReq(src string) error {
 	var cli = new(http.Client)
-	req, err := http.NewRequest("DELETE", EndpointProxy+"/"+src, nil)
+	req, err := http.NewRequest("DELETE", Endpoint+"/proxy/"+src, nil)
 	if err != nil {
 		return err
 	}
@@ -64,7 +69,7 @@ func CancelReq(src string) error {
 
 func ConfigReq(proxycfg string) error {
 	var cli = new(http.Client)
-	req, err := http.NewRequest("PUT", EndpointProxy+"/app-config?key="+proxycfg, nil)
+	req, err := http.NewRequest("PUT", Endpoint+"/proxy/app-config?key="+proxycfg, nil)
 	if err != nil {
 		return err
 	}
@@ -85,7 +90,7 @@ func ConfigReq(proxycfg string) error {
 }
 
 func InfoReq() error {
-	resp, err := http.Get(Endpoint)
+	resp, err := http.Get(Endpoint + "/info")
 	if err != nil {
 		return err
 	}
@@ -104,7 +109,7 @@ func InfoReq() error {
 }
 
 func ListProxyReq() error {
-	resp, err := http.Get(EndpointProxyList)
+	resp, err := http.Get(Endpoint + "/proxy/list")
 	if err != nil {
 		return err
 	}

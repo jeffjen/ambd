@@ -6,8 +6,11 @@ import (
 
 func init() {
 	cli.AppHelpTemplate = `Usage: {{.Name}} [COMMAND]
-{{.Usage}}
 
+{{.Usage}}{{if .Flags}}
+Options:
+	{{range .Flags}}{{.}}
+	{{end}}{{end}}
 Commands:
 	{{range .Commands}}{{.Name}}{{ "\t " }}{{.Usage}}
 	{{end}}

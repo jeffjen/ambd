@@ -17,6 +17,6 @@ func NewListCmd() cli.Command {
 
 func list(ctx *cli.Context) {
 	if err := ListProxyReq(); err != nil {
-		fmt.Fprintln(os.Stderr, "unable to reach server")
+		fmt.Fprintln(os.Stderr, "unable to reach "+Endpoint)
 	}
 }
