@@ -16,6 +16,8 @@ var (
 	ProxyConfigKey string
 
 	ConfigReset ctx.CancelFunc
+
+	retry = &proxy.Backoff{}
 )
 
 func get(value string) (targets []*Info) {
@@ -38,19 +40,33 @@ func doReloadbyConfig(targets []*Info) {
 	}
 }
 
+func reloadWorker() chan<- []*Info {
+	order := make(chan []*Info)
+	go func() {
+		for o := range order {
+			doReloadbyConfig(o)
+		}
+	}()
+	return order
+}
+
 func doWatch(c ctx.Context, watcher etcd.Watcher) <-chan []*Info {
 	v := make(chan []*Info)
 	go func() {
 		evt, err := watcher.Next(c)
 		if err != nil {
-			log.Debug(err)
-			close(v)
-		} else if evt.Node.Dir {
-			log.WithFields(log.Fields{"key": evt.Node.Key}).Warning("not a valid node")
-			v <- make([]*Info, 0)
+			log.WithFields(log.Fields{"err": err}).Debug("config")
+			retry.Delay()
+			v <- nil
 		} else {
-			// FIXME: check that is is not a del or expire
-			v <- get(evt.Node.Value)
+			retry.Reset()
+			if evt.Node.Dir {
+				log.WithFields(log.Fields{"key": evt.Node.Key}).Warning("not a valid node")
+				v <- nil
+			} else {
+				// FIXME: check that is is not a del or expire
+				v <- get(evt.Node.Value)
+			}
 		}
 	}()
 	return v
@@ -60,18 +76,19 @@ func followBootStrap() {
 	cfg := etcd.Config{Endpoints: disc.Endpoints()}
 	kAPI, err := proxy.NewKeysAPI(cfg)
 	if err != nil {
-		log.Warning(err)
+		log.WithFields(log.Fields{"err": err}).Warning("bootstrap")
 		return
 	}
 	resp, err := kAPI.Get(RootContext, ProxyConfigKey, nil)
 	if err != nil {
-		log.Warning(err)
-		return
+		log.WithFields(log.Fields{"err": err}).Warning("bootstrap")
+		doReloadbyConfig(make([]*Info, 0))
 	} else if resp.Node.Dir {
 		log.WithFields(log.Fields{"key": resp.Node.Key}).Warning("not a valid node")
-		return
+		doReloadbyConfig(make([]*Info, 0))
+	} else {
+		doReloadbyConfig(get(resp.Node.Value))
 	}
-	doReloadbyConfig(get(resp.Node.Value))
 }
 
 func Follow() {
@@ -84,17 +101,19 @@ func Follow() {
 		cfg := etcd.Config{Endpoints: disc.Endpoints()}
 		watcher, err := proxy.NewWatcher(cfg, ProxyConfigKey, 0)
 		if err != nil {
-			log.Warning(err)
+			log.WithFields(log.Fields{"err": err}).Warning("config")
 			return
 		}
+		order := reloadWorker()
+		defer close(order)
 		for yay := true; yay; {
 			v := doWatch(c, watcher)
 			select {
 			case <-c.Done():
 				yay = false
 			case proxyTargets, ok := <-v:
-				if ok && len(proxyTargets) != 0 {
-					go doReloadbyConfig(proxyTargets)
+				if ok && proxyTargets != nil {
+					order <- proxyTargets
 				}
 				yay = ok
 			}
