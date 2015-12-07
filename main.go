@@ -2,16 +2,11 @@ package main
 
 import (
 	"github.com/jeffjen/docker-ambassador/cmd"
-	disc "github.com/jeffjen/go-discovery"
 
 	cli "github.com/codegangsta/cli"
 
 	"os"
 )
-
-func init() {
-	disc.RegisterPath = "/srv/ambassador"
-}
 
 func main() {
 	app := cli.NewApp()

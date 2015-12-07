@@ -9,6 +9,11 @@ import (
 var (
 	Flags = []cli.Flag{
 		cli.StringFlag{
+			Name:  "prefix",
+			Usage: "Prefix to apply for discovery",
+			Value: "/debug/ambassador",
+		},
+		cli.StringFlag{
 			Name:  "addr",
 			Usage: "API endpoint for admin",
 		},
