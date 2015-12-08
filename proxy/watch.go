@@ -46,6 +46,7 @@ func doReload(pxycfg []*Info) {
 		mod <- &libkv.Value{R: true}
 		elem.X.(*Info).Cancel()
 	}
+	log.WithFields(log.Fields{"count": len(Targets)}).Debug("reload from args")
 	for _, spec := range Targets {
 		meta, err := parse(spec)
 		if err != nil {
@@ -58,6 +59,7 @@ func doReload(pxycfg []*Info) {
 			}
 		}
 	}
+	log.WithFields(log.Fields{"count": len(pxycfg)}).Debug("reload from cfgkey")
 	for _, meta := range pxycfg {
 		if err := Listen(meta); err != nil {
 			if err != ErrProxyExist {
