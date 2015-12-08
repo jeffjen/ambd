@@ -54,7 +54,6 @@ func Configure(w http.ResponseWriter, r *http.Request) {
 
 	// reload config setting
 	proxy.Follow()
-	proxy.RunProxyDaemon()
 
 	w.Write([]byte("done"))
 }
@@ -84,7 +83,6 @@ func Follow(w http.ResponseWriter, r *http.Request) {
 
 	// reload config setting
 	proxy.Follow()
-	proxy.RunProxyDaemon()
 
 	w.Write([]byte("done"))
 }

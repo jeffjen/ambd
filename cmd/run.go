@@ -33,13 +33,12 @@ func Ambassador(ctx *cli.Context) {
 
 	if proxycfg != "" {
 		proxy.ProxyConfigKey = proxycfg
-		proxy.Follow()
 	}
-
 	if proxyTargets != nil {
 		proxy.Targets = proxyTargets
-		proxy.RunProxyDaemon()
 	}
+
+	proxy.Follow()
 
 	if addr != "" {
 		log.WithFields(log.Fields{"addr": addr}).Info("API endpoint begin")

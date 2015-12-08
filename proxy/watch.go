@@ -20,6 +20,17 @@ var (
 	retry = &proxy.Backoff{}
 )
 
+func parse(spec string) (*Info, error) {
+	var i = new(Info)
+	if err := json.Unmarshal([]byte(spec), i); err != nil {
+		return nil, err
+	}
+	if i.Name == "" {
+		return nil, ErrMissingName
+	}
+	return i, nil
+}
+
 func get(value string) (targets []*Info) {
 	targets = make([]*Info, 0)
 	if err := json.Unmarshal([]byte(value), &targets); err != nil {
@@ -29,14 +40,30 @@ func get(value string) (targets []*Info) {
 	return
 }
 
-func doReloadbyConfig(targets []*Info) {
+func doReload(pxycfg []*Info) {
 	it, mod := Store.IterateW()
 	for elem := range it {
 		mod <- &libkv.Value{R: true}
 		elem.X.(*Info).Cancel()
 	}
-	for _, meta := range targets {
-		Listen(meta)
+	for _, spec := range Targets {
+		meta, err := parse(spec)
+		if err != nil {
+			log.WithFields(log.Fields{"err": err}).Warning("reload")
+			continue
+		}
+		if err = Listen(meta); err != nil {
+			if err != ErrProxyExist {
+				log.WithFields(log.Fields{"err": err}).Debug("reload")
+			}
+		}
+	}
+	for _, meta := range pxycfg {
+		if err := Listen(meta); err != nil {
+			if err != ErrProxyExist {
+				log.WithFields(log.Fields{"err": err}).Debug("reload")
+			}
+		}
 	}
 }
 
@@ -44,7 +71,7 @@ func reloadWorker() chan<- []*Info {
 	order := make(chan []*Info)
 	go func() {
 		for o := range order {
-			doReloadbyConfig(o)
+			doReload(o)
 		}
 	}()
 	return order
@@ -82,12 +109,12 @@ func followBootStrap() {
 	resp, err := kAPI.Get(RootContext, ProxyConfigKey, nil)
 	if err != nil {
 		log.WithFields(log.Fields{"err": err}).Warning("bootstrap")
-		doReloadbyConfig(make([]*Info, 0))
+		doReload(make([]*Info, 0))
 	} else if resp.Node.Dir {
 		log.WithFields(log.Fields{"key": resp.Node.Key}).Warning("not a valid node")
-		doReloadbyConfig(make([]*Info, 0))
+		doReload(make([]*Info, 0))
 	} else {
-		doReloadbyConfig(get(resp.Node.Value))
+		doReload(get(resp.Node.Value))
 	}
 }
 

@@ -9,7 +9,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 	ctx "golang.org/x/net/context"
 
-	"encoding/json"
 	"errors"
 )
 
@@ -101,17 +100,6 @@ func (i *Info) Listen() {
 	}()
 }
 
-func parse(spec string) (*Info, error) {
-	var i = new(Info)
-	if err := json.Unmarshal([]byte(spec), i); err != nil {
-		return nil, err
-	}
-	if i.Name == "" {
-		return nil, ErrMissingName
-	}
-	return i, nil
-}
-
 func Listen(meta *Info) error {
 	if Store.Get(meta.Name) != nil {
 		return ErrProxyExist
@@ -119,19 +107,4 @@ func Listen(meta *Info) error {
 	meta.Listen()
 	Store.Set(meta.Name, meta)
 	return nil
-}
-
-func RunProxyDaemon() {
-	for _, spec := range Targets {
-		meta, err := parse(spec)
-		if err != nil {
-			log.WithFields(log.Fields{"err": err}).Warning("RunProxyDaemon")
-			continue
-		}
-		if err = Listen(meta); err != nil {
-			if err != ErrProxyExist {
-				log.WithFields(log.Fields{"err": err}).Warning("RunProxyDaemon")
-			}
-		}
-	}
 }
