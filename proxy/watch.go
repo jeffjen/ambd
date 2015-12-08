@@ -115,7 +115,11 @@ func followBootStrap() {
 		doReload(make([]*Info, 0))
 	} else {
 		log.WithFields(log.Fields{"key": resp.Node.Key, "val": resp.Node.Value}).Debug("cfgkey")
-		doReload(get(resp.Node.Value))
+		if pxycfg := get(resp.Node.Value); pxycfg != nil {
+			doReload(pxycfg)
+		} else {
+			doReload(make([]*Info, 0))
+		}
 	}
 }
 
