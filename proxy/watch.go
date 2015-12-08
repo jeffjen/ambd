@@ -91,8 +91,18 @@ func doWatch(c ctx.Context, watcher etcd.Watcher) <-chan []*Info {
 				log.WithFields(log.Fields{"key": evt.Node.Key}).Warning("not a valid node")
 				v <- nil
 			} else {
-				// FIXME: check that is is not a del or expire
-				v <- get(evt.Node.Value)
+				switch evt.Action {
+				default:
+					v <- nil
+					break
+				case "set":
+					v <- get(evt.Node.Value)
+					break
+				case "del":
+				case "expire":
+					v <- make([]*Info, 0)
+					break
+				}
 			}
 		}
 	}()
