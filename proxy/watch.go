@@ -114,6 +114,7 @@ func followBootStrap() {
 		log.WithFields(log.Fields{"key": resp.Node.Key}).Warning("not a valid node")
 		doReload(make([]*Info, 0))
 	} else {
+		log.WithFields(log.Fields{"key": resp.Node.Key, "val": resp.Node.Value}).Debug("cfgkey")
 		doReload(get(resp.Node.Value))
 	}
 }
