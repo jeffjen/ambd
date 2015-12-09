@@ -32,7 +32,9 @@ func Ambassador(ctx *cli.Context) {
 		}
 	}
 
-	if proxycfg != "" {
+	if cfgkey := proxy.ConfigKey(); cfgkey != "" {
+		proxy.ProxyConfigKey = cfgkey
+	} else if proxycfg != "" {
 		proxy.ProxyConfigKey = proxycfg
 	}
 	if proxyTargets != nil {

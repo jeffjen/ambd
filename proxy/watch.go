@@ -10,6 +10,8 @@ import (
 	ctx "golang.org/x/net/context"
 
 	"encoding/json"
+	"io/ioutil"
+	"time"
 )
 
 var (
@@ -19,6 +21,19 @@ var (
 
 	retry = &proxy.Backoff{}
 )
+
+func ConfigKey() string {
+	var cfgkey string
+	if buf, err := ioutil.ReadFile(".proxycfg"); err == nil {
+		cfgkey = string(buf)
+	}
+	go func() {
+		for _ = range time.Tick(2 * time.Minute) {
+			ioutil.WriteFile(".proxycfg", []byte(ProxyConfigKey), 0644)
+		}
+	}()
+	return cfgkey
+}
 
 func parse(spec string) (*Info, error) {
 	var i = new(Info)
