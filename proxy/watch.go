@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	ProxyConfigKey string
+	ProxyConfigKey string = "__nobody__"
 
 	ConfigReset ctx.CancelFunc
 
@@ -49,7 +49,7 @@ func parse(spec string) (*Info, error) {
 func get(value string) (targets []*Info) {
 	targets = make([]*Info, 0)
 	if err := json.Unmarshal([]byte(value), &targets); err != nil {
-		log.WithFields(log.Fields{"err": err}).Warning("bad proxy spec")
+		log.WithFields(log.Fields{"err": err, "value": value}).Warning("config")
 		targets = nil
 	}
 	return
@@ -108,6 +108,7 @@ func doWatch(c ctx.Context, watcher etcd.Watcher) <-chan []*Info {
 				log.WithFields(log.Fields{"key": evt.Node.Key}).Warning("not a valid node")
 				v <- nil
 			} else {
+				log.WithFields(log.Fields{"key": evt.Node.Key}).Warning("cfgkey")
 				switch evt.Action {
 				default:
 					v <- nil
