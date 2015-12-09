@@ -1,7 +1,7 @@
 package main
 
 import (
-	arg "github.com/jeffjen/docker-ambassador/ambctl/arg"
+	arg "github.com/jeffjen/ambd/ambctl/arg"
 
 	cli "github.com/codegangsta/cli"
 

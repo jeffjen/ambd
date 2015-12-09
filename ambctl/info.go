@@ -10,7 +10,7 @@ import (
 func NewInfoCmd() cli.Command {
 	return cli.Command{
 		Name:   "info",
-		Usage:  "Get docker-ambassador info",
+		Usage:  "Get ambd info",
 		Action: info,
 	}
 }

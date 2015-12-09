@@ -1,2 +1,2 @@
 # ambcli
-ambcli is a tool for administrating docker-ambassador
+ambcli is a tool for administrating ambd

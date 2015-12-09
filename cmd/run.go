@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	proxy "github.com/jeffjen/docker-ambassador/proxy"
-	web "github.com/jeffjen/docker-ambassador/web"
+	proxy "github.com/jeffjen/ambd/proxy"
+	web "github.com/jeffjen/ambd/web"
 	disc "github.com/jeffjen/go-discovery"
 	dcli "github.com/jeffjen/go-discovery/cli"
 

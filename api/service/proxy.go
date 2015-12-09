@@ -1,8 +1,8 @@
 package service
 
 import (
-	api "github.com/jeffjen/docker-ambassador/api"
-	proxy "github.com/jeffjen/docker-ambassador/proxy"
+	api "github.com/jeffjen/ambd/api"
+	proxy "github.com/jeffjen/ambd/proxy"
 
 	log "github.com/Sirupsen/logrus"
 

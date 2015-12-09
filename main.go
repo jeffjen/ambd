@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/jeffjen/docker-ambassador/cmd"
+	"github.com/jeffjen/ambd/cmd"
 
 	cli "github.com/codegangsta/cli"
 
@@ -10,7 +10,7 @@ import (
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "docker-ambassador"
+	app.Name = "ambd"
 	app.Usage = "Facilitate dynamic Ambassador pattern"
 	app.Authors = []cli.Author{
 		cli.Author{"Yi-Hung Jen", "yihungjen@gmail.com"},

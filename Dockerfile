@@ -2,9 +2,9 @@ FROM scratch
 MAINTAINER YI-HUNG JEN <yihungjen@gmail.com>
 
 COPY ca-certificates.crt /etc/ssl/certs/
-COPY docker-ambassador /
+COPY ambd /
 COPY ambctl/ambctl /
-ENTRYPOINT ["/docker-ambassador"]
+ENTRYPOINT ["/ambd"]
 CMD ["--help"]
 
 ENV VERSION latest

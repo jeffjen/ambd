@@ -1,7 +1,7 @@
 package service
 
 import (
-	proxy "github.com/jeffjen/docker-ambassador/proxy"
+	proxy "github.com/jeffjen/ambd/proxy"
 	disc "github.com/jeffjen/go-discovery"
 
 	_ "github.com/Sirupsen/logrus"

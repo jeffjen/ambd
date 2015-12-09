@@ -1,8 +1,8 @@
 package web
 
 import (
-	api "github.com/jeffjen/docker-ambassador/api"
-	srv "github.com/jeffjen/docker-ambassador/api/service"
+	api "github.com/jeffjen/ambd/api"
+	srv "github.com/jeffjen/ambd/api/service"
 	d "github.com/jeffjen/go-discovery/info"
 
 	log "github.com/Sirupsen/logrus"
