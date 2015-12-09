@@ -1,0 +1,22 @@
+ambassador:
+    container_name: ambassador
+    command:
+        - "--addr"
+        - "0.0.0.0:29091"
+    environment:
+        LOG_LEVEL: INFO
+    image: jeffjen/ambd
+    net: isolated_nw
+    ports:
+        - "29091:29091"
+
+redis:
+    container_name: redis
+    image: redis
+    net: isolated_nw
+
+probe:
+    build: .
+    command: "node test.js"
+    net: isolated_nw
+    working_dir: /usr/src/app
