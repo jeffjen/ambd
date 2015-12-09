@@ -1,8 +1,7 @@
-# Setting up a working deployment
+## Setting up a working deployment
 Lets go over a typical setup using [docker-compose](https://docs.docker.com/compose/)
 
-## Composition and definition
-
+### Composition and definition
 Create a custom bridge network with docker
 ```
 docker network create --driver bridge isolated_nw
@@ -45,11 +44,9 @@ probe:
     working_dir: /usr/src/app
 ```
 
-## Starting up
-
-First, build and run the stack with `docker-compose`
-- `docker-compose build`
-- `docker-compose up`
+### Starting up
+First, build and run the stack with `docker-compose up`.  This will take
+awhile.
 
 Your app will now be complaining it could not reach a Redis node.  Lets fix
 this by configuring `ambassador` to point to a Redis endpoint.
