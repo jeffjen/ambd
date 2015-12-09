@@ -13,11 +13,11 @@ ambd --addr 0.0.0.0:29091 --advertise advertise-host-ip:29091 \
 ```
 
 - Runtime configuration client `ambctl`
-    - list: `ambctl list`
-    - create: `ambctl create --name mgo --src :3376 --dst mgos-ip-1:3376 --dst mgos-ip-2:3376`
-    - cancel: `ambctl cancel --name mgo --name redis`
-    - info: `ambctl info`
-    - config: `ambctl config /proxy/debug/v2`
+    - `ambctl list`
+    - `ambctl create --name mgo --src :3376 --dst mgos-ip-1:3376 --dst mgos-ip-2:3376`
+    - `ambctl cancel --name mgo --name redis`
+    - `ambctl info`
+    - `ambctl config /proxy/debug/v2`
 
 - Available as docker image [jeffjen/ambd](https://hub.docker.com/r/jeffjen/ambd/)
 
