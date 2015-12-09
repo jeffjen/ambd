@@ -8,8 +8,6 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	cli "github.com/codegangsta/cli"
-
-	"os"
 )
 
 func Ambassador(ctx *cli.Context) {
@@ -27,8 +25,11 @@ func Ambassador(ctx *cli.Context) {
 	disc.RegisterPath = ctx.String("prefix")
 
 	if err := dcli.Before(ctx); err != nil {
-		log.Error(err)
-		os.Exit(1)
+		if err == dcli.ErrRequireAdvertise || err == dcli.ErrRequireDiscovery {
+			log.WithFields(log.Fields{"err": err}).Warning("discovery feature disabled")
+		} else {
+			log.WithFields(log.Fields{"err": err}).Fatal("halt")
+		}
 	}
 
 	if proxycfg != "" {
