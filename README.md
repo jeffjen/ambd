@@ -1,6 +1,8 @@
 # ambd
 
 [![Join the chat at https://gitter.im/jeffjen/ambd](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jeffjen/ambd?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![license](http://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/jeffjen/go-libkv/master/LICENSE)
+
 The Ambassador pattern to container services
 
 ### TL;DR
