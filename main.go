@@ -16,7 +16,6 @@ func main() {
 		cli.Author{"Yi-Hung Jen", "yihungjen@gmail.com"},
 	}
 	app.Flags = cmd.NewFlag()
-	app.Commands = cmd.Commands
 	app.Action = cmd.Ambassador
 	app.Run(os.Args)
 }

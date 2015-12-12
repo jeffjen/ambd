@@ -8,6 +8,12 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	cli "github.com/codegangsta/cli"
+
+	"path"
+)
+
+const (
+	DiscoveryPath = "/docker/ambd/nodes"
 )
 
 func Ambassador(ctx *cli.Context) {
@@ -22,7 +28,7 @@ func Ambassador(ctx *cli.Context) {
 	)
 
 	// setup register path for discovery
-	disc.RegisterPath = ctx.String("prefix")
+	disc.RegisterPath = path.Join(ctx.String("cluster"), DiscoveryPath)
 
 	if err := dcli.Before(ctx); err != nil {
 		if err == dcli.ErrRequireAdvertise || err == dcli.ErrRequireDiscovery {

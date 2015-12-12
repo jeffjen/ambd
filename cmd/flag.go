@@ -9,9 +9,9 @@ import (
 var (
 	Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:  "prefix",
-			Usage: "Prefix to apply for discovery",
-			Value: "/debug/ambassador",
+			Name:  "cluster",
+			Usage: "cluster to apply for discovery",
+			Value: "debug",
 		},
 		cli.StringFlag{
 			Name:  "addr",

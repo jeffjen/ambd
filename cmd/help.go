@@ -21,10 +21,5 @@ Example proxy specification:
 {{if .Flags}}Options:
 	{{range .Flags}}{{.}}
 	{{end}}{{end}}
-{{if .Commands}}Commands:
-	{{range .Commands}}{{.Name}}{{ "\t " }}{{.Usage}}
-	{{end}}
-Run '{{.Name}} help COMMAND' for more information on a command.{{end}}
-
 `
 }
