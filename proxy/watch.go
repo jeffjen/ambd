@@ -55,7 +55,7 @@ func get(value string) (targets []*Info) {
 	return
 }
 
-func doReload(pxycfg []*Info) {
+func reload(pxycfg []*Info) {
 	it, mod := Store.IterateW()
 	for elem := range it {
 		mod <- &libkv.Value{R: true}
@@ -88,13 +88,13 @@ func reloadWorker() chan<- []*Info {
 	order := make(chan []*Info)
 	go func() {
 		for o := range order {
-			doReload(o)
+			reload(o)
 		}
 	}()
 	return order
 }
 
-func doWatch(c ctx.Context, watcher etcd.Watcher) <-chan []*Info {
+func watcheWorker(c ctx.Context, watcher etcd.Watcher) <-chan []*Info {
 	v := make(chan []*Info)
 	go func() {
 		evt, err := watcher.Next(c)
@@ -128,8 +128,7 @@ func doWatch(c ctx.Context, watcher etcd.Watcher) <-chan []*Info {
 }
 
 func followBootStrap() {
-	cfg := etcd.Config{Endpoints: disc.Endpoints()}
-	kAPI, err := proxy.NewKeysAPI(cfg)
+	kAPI, err := disc.NewKeysAPI(etcd.Config{Endpoints: disc.Endpoints()})
 	if err != nil {
 		log.WithFields(log.Fields{"err": err}).Warning("bootstrap")
 		return
@@ -137,16 +136,16 @@ func followBootStrap() {
 	resp, err := kAPI.Get(RootContext, ProxyConfigKey, nil)
 	if err != nil {
 		log.WithFields(log.Fields{"err": err}).Warning("bootstrap")
-		doReload(make([]*Info, 0))
+		reload(make([]*Info, 0))
 	} else if resp.Node.Dir {
 		log.WithFields(log.Fields{"key": resp.Node.Key}).Warning("not a valid node")
-		doReload(make([]*Info, 0))
+		reload(make([]*Info, 0))
 	} else {
 		log.WithFields(log.Fields{"key": resp.Node.Key, "val": resp.Node.Value}).Debug("cfgkey")
 		if pxycfg := get(resp.Node.Value); pxycfg != nil {
-			doReload(pxycfg)
+			reload(pxycfg)
 		} else {
-			doReload(make([]*Info, 0))
+			reload(make([]*Info, 0))
 		}
 	}
 }
@@ -158,8 +157,10 @@ func Follow() {
 
 	c, ConfigReset = ctx.WithCancel(RootContext)
 	go func() {
-		cfg := etcd.Config{Endpoints: disc.Endpoints()}
-		watcher, err := proxy.NewWatcher(cfg, ProxyConfigKey, 0)
+		watcher, err := disc.NewWatcher(&disc.WatcherOptions{
+			Config: etcd.Config{Endpoints: disc.Endpoints()},
+			Key:    ProxyConfigKey,
+		})
 		if err != nil {
 			log.WithFields(log.Fields{"err": err}).Warning("config")
 			return
@@ -167,7 +168,7 @@ func Follow() {
 		order := reloadWorker()
 		defer close(order)
 		for yay := true; yay; {
-			v := doWatch(c, watcher)
+			v := watcheWorker(c, watcher)
 			select {
 			case <-c.Done():
 				yay = false
