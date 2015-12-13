@@ -3,6 +3,8 @@ package main
 import (
 	cli "github.com/codegangsta/cli"
 
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"os"
 )
@@ -15,8 +17,19 @@ func NewInfoCmd() cli.Command {
 	}
 }
 
-func info(ctx *cli.Context) {
-	if err := InfoReq(); err != nil {
-		fmt.Fprintln(os.Stderr, "unable to reach server")
+func info(c *cli.Context) {
+	resp, fail := InfoReq(), false
+	for ret := range resp {
+		if ret.Err != nil {
+			fmt.Fprintln(os.Stderr, ret.Err)
+			fail = true
+		} else {
+			var out = new(bytes.Buffer)
+			json.Indent(out, ret.Data, "", "    ")
+			out.WriteTo(os.Stdout)
+		}
+	}
+	if fail {
+		os.Exit(1)
 	}
 }

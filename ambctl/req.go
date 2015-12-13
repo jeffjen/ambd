@@ -3,126 +3,265 @@ package main
 import (
 	arg "github.com/jeffjen/ambd/ambctl/arg"
 
-	cli "github.com/codegangsta/cli"
+	ctx "golang.org/x/net/context"
+	"golang.org/x/net/context/ctxhttp"
 
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
-	"os"
+	"sync"
+	"time"
 )
 
 var (
-	Endpoint string
+	Endpoint []string
 )
 
-func endpoint(ctx *cli.Context) error {
-	var host string = ctx.String("host")
-	Endpoint = fmt.Sprintf("http://%s", host)
-	return nil
+type Response struct {
+	Data []byte
+	Err  error
 }
 
-func CreateReq(pflag arg.Info) error {
-	var buf = new(bytes.Buffer)
-	if err := json.NewEncoder(buf).Encode(pflag); err != nil {
-		return err
-	}
-	resp, err := http.Post(Endpoint+"/proxy", "application/json", buf)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+func CreateReq(pflag *arg.Info) (output chan *Response) {
+	var (
+		wg sync.WaitGroup
 
-	var ret = new(bytes.Buffer)
-	io.Copy(ret, resp.Body)
+		root = ctx.Background()
 
-	if ans := ret.String(); ans != "done" {
-		return errors.New(ans)
-	} else {
-		return nil
-	}
+		v = make(chan *Response, 1)
+	)
+
+	go func() {
+		defer close(v)
+
+		for _, endpoint := range Endpoint {
+			wg.Add(1)
+			go func(ep string) {
+				defer wg.Done()
+
+				var body *bytes.Reader
+				if buf, err := json.Marshal(pflag); err != nil {
+					v <- &Response{Err: err}
+					return
+				} else {
+					body = bytes.NewReader(buf)
+				}
+
+				wk, abort := ctx.WithTimeout(root, 100*time.Millisecond)
+				defer abort()
+
+				resp, err := ctxhttp.Post(wk, nil, ep+"/proxy", "application/json", body)
+				if err != nil {
+					v <- &Response{Err: err}
+					return
+				}
+				defer resp.Body.Close()
+
+				inn := new(bytes.Buffer)
+				io.Copy(inn, resp.Body)
+				if ans := inn.String(); ans != "done" {
+					v <- &Response{Err: errors.New(ans)}
+					return
+				}
+
+				v <- &Response{}
+
+			}(endpoint)
+		}
+		wg.Wait()
+	}()
+
+	return v
 }
 
-func CancelReq(src string) error {
-	var cli = new(http.Client)
-	req, err := http.NewRequest("DELETE", Endpoint+"/proxy/"+src, nil)
-	if err != nil {
-		return err
-	}
-	resp, err := cli.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+func CancelReq(src string) (output chan *Response) {
+	var (
+		wg sync.WaitGroup
 
-	var ret = new(bytes.Buffer)
-	io.Copy(ret, resp.Body)
+		root = ctx.Background()
 
-	if ans := ret.String(); ans != "done" {
-		return errors.New(ans)
-	} else {
-		return nil
-	}
+		v = make(chan *Response, 1)
+	)
+
+	go func() {
+		defer close(v)
+
+		for _, endpoint := range Endpoint {
+			wg.Add(1)
+			go func(ep string) {
+				defer wg.Done()
+
+				wk, abort := ctx.WithTimeout(root, 100*time.Millisecond)
+				defer abort()
+
+				var cli = new(http.Client)
+				req, err := http.NewRequest("DELETE", ep+"/proxy/"+src, nil)
+				if err != nil {
+					v <- &Response{Err: err}
+					return
+				}
+
+				resp, err := ctxhttp.Do(wk, cli, req)
+				if err != nil {
+					v <- &Response{Err: err}
+					return
+				}
+				defer resp.Body.Close()
+
+				var inn = new(bytes.Buffer)
+				io.Copy(inn, resp.Body)
+				if ans := inn.String(); ans != "done" {
+					v <- &Response{Err: errors.New(ans)}
+					return
+				}
+
+				v <- &Response{}
+
+			}(endpoint)
+		}
+		wg.Wait()
+	}()
+
+	return v
 }
 
-func ConfigReq(proxycfg string) error {
-	var cli = new(http.Client)
-	req, err := http.NewRequest("PUT", Endpoint+"/proxy/app-config?key="+proxycfg, nil)
-	if err != nil {
-		return err
-	}
-	resp, err := cli.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+func ConfigReq(proxycfg string) (output chan *Response) {
+	var (
+		wg sync.WaitGroup
 
-	var ret = new(bytes.Buffer)
-	io.Copy(ret, resp.Body)
+		root = ctx.Background()
 
-	if ans := ret.String(); ans != "done" {
-		return errors.New(ans)
-	} else {
-		return nil
-	}
+		v = make(chan *Response, 1)
+	)
+
+	go func() {
+		defer close(v)
+
+		for _, endpoint := range Endpoint {
+			wg.Add(1)
+			go func(ep string) {
+				defer wg.Done()
+
+				wk, abort := ctx.WithTimeout(root, 100*time.Millisecond)
+				defer abort()
+
+				var cli = new(http.Client)
+				req, err := http.NewRequest("PUT", ep+"/proxy/app-config?key="+proxycfg, nil)
+				if err != nil {
+					v <- &Response{Err: err}
+					return
+				}
+
+				resp, err := ctxhttp.Do(wk, cli, req)
+				if err != nil {
+					v <- &Response{Err: err}
+					return
+				}
+				defer resp.Body.Close()
+
+				var inn = new(bytes.Buffer)
+				io.Copy(inn, resp.Body)
+				if ans := inn.String(); ans != "done" {
+					v <- &Response{Err: errors.New(ans)}
+					return
+				}
+
+				v <- &Response{}
+
+			}(endpoint)
+		}
+		wg.Wait()
+	}()
+
+	return v
 }
 
-func InfoReq() error {
-	resp, err := http.Get(Endpoint + "/info")
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+func InfoReq() (output chan *Response) {
+	var (
+		wg sync.WaitGroup
 
-	var out, inn bytes.Buffer
+		root = ctx.Background()
 
-	_, err = inn.ReadFrom(resp.Body)
-	if err != nil {
-		return err
-	}
+		v = make(chan *Response, 1)
+	)
 
-	json.Indent(&out, inn.Bytes(), "", "    ")
-	out.WriteTo(os.Stdout)
-	return nil
+	go func() {
+		defer close(v)
+
+		for _, endpoint := range Endpoint {
+			wg.Add(1)
+			go func(ep string) {
+				defer wg.Done()
+
+				wk, abort := ctx.WithTimeout(root, 100*time.Millisecond)
+				defer abort()
+
+				resp, err := ctxhttp.Get(wk, nil, ep+"/info")
+				if err != nil {
+					v <- &Response{Err: err}
+					return
+				}
+				defer resp.Body.Close()
+
+				inn := new(bytes.Buffer)
+				_, err = inn.ReadFrom(resp.Body)
+				if err != nil {
+					v <- &Response{Err: err}
+					return
+				}
+
+				v <- &Response{Data: inn.Bytes()}
+
+			}(endpoint)
+		}
+		wg.Wait()
+	}()
+
+	return v
 }
 
-func ListProxyReq() error {
-	resp, err := http.Get(Endpoint + "/proxy/list")
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+func ListProxyReq() (output chan *Response) {
+	var (
+		wg sync.WaitGroup
 
-	var out, inn bytes.Buffer
+		root = ctx.Background()
 
-	_, err = inn.ReadFrom(resp.Body)
-	if err != nil {
-		return err
-	}
+		v = make(chan *Response, 1)
+	)
 
-	json.Indent(&out, inn.Bytes(), "", "    ")
-	out.WriteTo(os.Stdout)
-	return nil
+	go func() {
+		defer close(v)
+
+		for _, endpoint := range Endpoint {
+			wg.Add(1)
+			go func(ep string) {
+				defer wg.Done()
+
+				wk, abort := ctx.WithTimeout(root, 100*time.Millisecond)
+				defer abort()
+
+				resp, err := ctxhttp.Get(wk, nil, ep+"/proxy/list")
+				if err != nil {
+					v <- &Response{Err: err}
+					return
+				}
+				defer resp.Body.Close()
+
+				inn := new(bytes.Buffer)
+				_, err = inn.ReadFrom(resp.Body)
+				if err != nil {
+					v <- &Response{Err: err}
+					return
+				}
+
+				v <- &Response{Data: inn.Bytes()}
+
+			}(endpoint)
+		}
+		wg.Wait()
+	}()
+
+	return v
 }

@@ -24,46 +24,41 @@ func NewCreateCmd() cli.Command {
 	}
 }
 
+func createreq(info *arg.Info) {
+	resp, fail := CreateReq(info), false
+	for ret := range resp {
+		if ret.Err != nil {
+			fmt.Fprintln(os.Stderr, ret.Err)
+			fail = true
+		} else {
+			fmt.Println("done")
+		}
+	}
+	if fail {
+		os.Exit(1)
+	}
+}
+
 func issue(Name, Net string, From, To []string) {
 	if len(From) == 1 {
-		if err := CreateReq(arg.Info{Name: Name, Net: Net, From: From[0], To: To}); err != nil {
-			fmt.Fprintln(os.Stderr, "failed request")
-			os.Exit(1)
-		} else {
-			fmt.Println("done")
-		}
+		createreq(&arg.Info{Name: Name, Net: Net, From: From[0], To: To})
 	} else {
-		if err := CreateReq(arg.Info{Name: Name, Net: Net, FromRange: From, To: To}); err != nil {
-			fmt.Fprintln(os.Stderr, "failed request")
-			os.Exit(1)
-		} else {
-			fmt.Println("done")
-		}
+		createreq(&arg.Info{Name: Name, Net: Net, FromRange: From, To: To})
 	}
 }
 
 func issueSrv(Name, Net string, From []string, Srv string) {
 	if len(From) == 1 {
-		if err := CreateReq(arg.Info{Name: Name, Net: Net, From: From[0], Service: Srv}); err != nil {
-			fmt.Fprintln(os.Stderr, "failed request")
-			os.Exit(1)
-		} else {
-			fmt.Println("done")
-		}
+		createreq(&arg.Info{Name: Name, Net: Net, From: From[0], Service: Srv})
 	} else {
-		if err := CreateReq(arg.Info{Name: Name, Net: Net, FromRange: From, Service: Srv}); err != nil {
-			fmt.Fprintln(os.Stderr, "failed request")
-			os.Exit(1)
-		} else {
-			fmt.Println("done")
-		}
+		createreq(&arg.Info{Name: Name, Net: Net, FromRange: From, Service: Srv})
 	}
 }
 
-func create(ctx *cli.Context) {
+func create(c *cli.Context) {
 	var (
-		Name = ctx.String("name")
-		Net  = ctx.String("net")
+		Name = c.String("name")
+		Net  = c.String("net")
 
 		FromRange []string
 	)
@@ -72,7 +67,7 @@ func create(ctx *cli.Context) {
 		fmt.Fprintln(os.Stderr, "missing required flag --net")
 		os.Exit(1)
 	}
-	if from := ctx.StringSlice("src"); len(from) != 0 {
+	if from := c.StringSlice("src"); len(from) != 0 {
 		FromRange = make([]string, len(from))
 		for idx, one_from := range from {
 			FromRange[idx] = one_from
@@ -82,13 +77,13 @@ func create(ctx *cli.Context) {
 		fmt.Fprintln(os.Stderr, "missing required flag --src")
 		os.Exit(1)
 	}
-	if dst := ctx.StringSlice("dst"); len(dst) != 0 {
+	if dst := c.StringSlice("dst"); len(dst) != 0 {
 		var To = make([]string, len(dst))
 		for idx, one_dst := range dst {
 			To[idx] = one_dst
 		}
 		issue(Name, Net, FromRange, To)
-	} else if srv := ctx.String("srv"); srv != "" {
+	} else if srv := c.String("srv"); srv != "" {
 		issueSrv(Name, Net, FromRange, srv)
 	}
 }

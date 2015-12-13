@@ -24,10 +24,16 @@ func config(ctx *cli.Context) {
 		os.Exit(1)
 	}
 
-	if err := ConfigReq(proxycfg[0]); err != nil {
-		fmt.Fprintln(os.Stderr, "failed request")
+	resp, fail := ConfigReq(proxycfg[0]), false
+	for ret := range resp {
+		if ret.Err != nil {
+			fmt.Fprintln(os.Stderr, "failed request")
+			fail = true
+		} else {
+			fmt.Println("done")
+		}
+	}
+	if fail {
 		os.Exit(1)
-	} else {
-		fmt.Println("done")
 	}
 }

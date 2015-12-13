@@ -23,9 +23,11 @@ Run '{{.Name}} help COMMAND' for more information on a command.
 {{.Usage}}{{if .Flags}}
 Options:
 	{{range .Flags}}{{.}}
+	{{end}}{{end}}{{if .Subcommands}}
+Commands:
+	{{range .Subcommands}}{{.Name}}{{ "\t " }}{{.Usage}}
 	{{end}}{{end}}{{if .ArgsUsage}}
 
-CONFIG - {{.ArgsUsage}}
-{{end}}
+CONFIG - {{.ArgsUsage}}{{end}}
 `
 }

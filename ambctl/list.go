@@ -3,6 +3,8 @@ package main
 import (
 	cli "github.com/codegangsta/cli"
 
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"os"
 )
@@ -15,8 +17,19 @@ func NewListCmd() cli.Command {
 	}
 }
 
-func list(ctx *cli.Context) {
-	if err := ListProxyReq(); err != nil {
-		fmt.Fprintln(os.Stderr, "unable to reach "+Endpoint)
+func list(c *cli.Context) {
+	resp, fail := ListProxyReq(), false
+	for ret := range resp {
+		if ret.Err != nil {
+			fmt.Fprintln(os.Stderr, ret.Err)
+			fail = true
+		} else {
+			var out = new(bytes.Buffer)
+			json.Indent(out, ret.Data, "", "    ")
+			out.WriteTo(os.Stdout)
+		}
+	}
+	if fail {
+		os.Exit(1)
 	}
 }

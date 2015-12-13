@@ -19,17 +19,19 @@ func NewCancelCmd() cli.Command {
 }
 
 func cancel(ctx *cli.Context) {
-	var failed bool = false
-
+	fail := false
 	for _, name := range ctx.StringSlice("name") {
-		if err := CancelReq(name); err != nil {
-			fmt.Fprintf(os.Stderr, "failed cancel - %s\n", name)
-			failed = true
-		} else {
-			fmt.Printf("%s canceled\n", name)
+		resp := CancelReq(name)
+		for ret := range resp {
+			if ret.Err != nil {
+				fmt.Fprintf(os.Stderr, "failed cancel - %s\n", name)
+				fail = true
+			} else {
+				fmt.Printf("%s canceled\n", name)
+			}
 		}
 	}
-	if failed {
+	if fail {
 		os.Exit(1)
 	}
 }

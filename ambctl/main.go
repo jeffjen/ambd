@@ -3,8 +3,16 @@ package main
 import (
 	cli "github.com/codegangsta/cli"
 
+	"fmt"
 	"os"
 )
+
+func endpoint(c *cli.Context) error {
+	if host := c.String("host"); host != "" {
+		Endpoint = append(Endpoint, fmt.Sprintf("http://%s", host))
+	}
+	return nil
+}
 
 func main() {
 	app := cli.NewApp()
@@ -17,6 +25,7 @@ func main() {
 		cli.StringFlag{Name: "host", Usage: "ambd host", Value: "localhost:29091"},
 	}
 	app.Commands = []cli.Command{
+		NewVollyCmd(),
 		NewListCmd(),
 		NewCreateCmd(),
 		NewCancelCmd(),
