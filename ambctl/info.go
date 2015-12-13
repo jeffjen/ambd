@@ -21,7 +21,7 @@ func info(c *cli.Context) {
 	resp, fail := InfoReq(), false
 	for ret := range resp {
 		if ret.Err != nil {
-			fmt.Fprintln(os.Stderr, ret.Err)
+			fmt.Fprintf(os.Stderr, "%s - failed info\n", ret.Host)
 			fail = true
 		} else {
 			var out = new(bytes.Buffer)

@@ -20,6 +20,7 @@ var (
 )
 
 type Response struct {
+	Host string
 	Data []byte
 	Err  error
 }
@@ -43,7 +44,7 @@ func CreateReq(pflag *arg.Info) (output chan *Response) {
 
 				var body *bytes.Reader
 				if buf, err := json.Marshal(pflag); err != nil {
-					v <- &Response{Err: err}
+					v <- &Response{Host: ep, Err: err}
 					return
 				} else {
 					body = bytes.NewReader(buf)
@@ -54,7 +55,7 @@ func CreateReq(pflag *arg.Info) (output chan *Response) {
 
 				resp, err := ctxhttp.Post(wk, nil, ep+"/proxy", "application/json", body)
 				if err != nil {
-					v <- &Response{Err: err}
+					v <- &Response{Host: ep, Err: err}
 					return
 				}
 				defer resp.Body.Close()
@@ -62,11 +63,11 @@ func CreateReq(pflag *arg.Info) (output chan *Response) {
 				inn := new(bytes.Buffer)
 				io.Copy(inn, resp.Body)
 				if ans := inn.String(); ans != "done" {
-					v <- &Response{Err: errors.New(ans)}
+					v <- &Response{Host: ep, Err: errors.New(ans)}
 					return
 				}
 
-				v <- &Response{}
+				v <- &Response{Host: ep}
 
 			}(endpoint)
 		}
@@ -99,13 +100,13 @@ func CancelReq(src string) (output chan *Response) {
 				var cli = new(http.Client)
 				req, err := http.NewRequest("DELETE", ep+"/proxy/"+src, nil)
 				if err != nil {
-					v <- &Response{Err: err}
+					v <- &Response{Host: ep, Err: err}
 					return
 				}
 
 				resp, err := ctxhttp.Do(wk, cli, req)
 				if err != nil {
-					v <- &Response{Err: err}
+					v <- &Response{Host: ep, Err: err}
 					return
 				}
 				defer resp.Body.Close()
@@ -113,11 +114,11 @@ func CancelReq(src string) (output chan *Response) {
 				var inn = new(bytes.Buffer)
 				io.Copy(inn, resp.Body)
 				if ans := inn.String(); ans != "done" {
-					v <- &Response{Err: errors.New(ans)}
+					v <- &Response{Host: ep, Err: errors.New(ans)}
 					return
 				}
 
-				v <- &Response{}
+				v <- &Response{Host: ep}
 
 			}(endpoint)
 		}
@@ -150,13 +151,13 @@ func ConfigReq(proxycfg string) (output chan *Response) {
 				var cli = new(http.Client)
 				req, err := http.NewRequest("PUT", ep+"/proxy/app-config?key="+proxycfg, nil)
 				if err != nil {
-					v <- &Response{Err: err}
+					v <- &Response{Host: ep, Err: err}
 					return
 				}
 
 				resp, err := ctxhttp.Do(wk, cli, req)
 				if err != nil {
-					v <- &Response{Err: err}
+					v <- &Response{Host: ep, Err: err}
 					return
 				}
 				defer resp.Body.Close()
@@ -164,11 +165,11 @@ func ConfigReq(proxycfg string) (output chan *Response) {
 				var inn = new(bytes.Buffer)
 				io.Copy(inn, resp.Body)
 				if ans := inn.String(); ans != "done" {
-					v <- &Response{Err: errors.New(ans)}
+					v <- &Response{Host: ep, Err: errors.New(ans)}
 					return
 				}
 
-				v <- &Response{}
+				v <- &Response{Host: ep}
 
 			}(endpoint)
 		}
@@ -200,7 +201,7 @@ func InfoReq() (output chan *Response) {
 
 				resp, err := ctxhttp.Get(wk, nil, ep+"/info")
 				if err != nil {
-					v <- &Response{Err: err}
+					v <- &Response{Host: ep, Err: err}
 					return
 				}
 				defer resp.Body.Close()
@@ -208,11 +209,11 @@ func InfoReq() (output chan *Response) {
 				inn := new(bytes.Buffer)
 				_, err = inn.ReadFrom(resp.Body)
 				if err != nil {
-					v <- &Response{Err: err}
+					v <- &Response{Host: ep, Err: err}
 					return
 				}
 
-				v <- &Response{Data: inn.Bytes()}
+				v <- &Response{Host: ep, Data: inn.Bytes()}
 
 			}(endpoint)
 		}
@@ -244,7 +245,7 @@ func ListProxyReq() (output chan *Response) {
 
 				resp, err := ctxhttp.Get(wk, nil, ep+"/proxy/list")
 				if err != nil {
-					v <- &Response{Err: err}
+					v <- &Response{Host: ep, Err: err}
 					return
 				}
 				defer resp.Body.Close()
@@ -252,11 +253,11 @@ func ListProxyReq() (output chan *Response) {
 				inn := new(bytes.Buffer)
 				_, err = inn.ReadFrom(resp.Body)
 				if err != nil {
-					v <- &Response{Err: err}
+					v <- &Response{Host: ep, Err: err}
 					return
 				}
 
-				v <- &Response{Data: inn.Bytes()}
+				v <- &Response{Host: ep, Data: inn.Bytes()}
 
 			}(endpoint)
 		}

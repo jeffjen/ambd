@@ -28,7 +28,7 @@ func createreq(info *arg.Info) {
 	resp, fail := CreateReq(info), false
 	for ret := range resp {
 		if ret.Err != nil {
-			fmt.Fprintln(os.Stderr, ret.Err)
+			fmt.Fprintf(os.Stderr, "%s - failed create\n", ret.Host)
 			fail = true
 		} else {
 			fmt.Println("done")

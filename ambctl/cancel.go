@@ -24,7 +24,7 @@ func cancel(ctx *cli.Context) {
 		resp := CancelReq(name)
 		for ret := range resp {
 			if ret.Err != nil {
-				fmt.Fprintf(os.Stderr, "failed cancel - %s\n", name)
+				fmt.Fprintf(os.Stderr, "%s - failed cancel: %s\n", ret.Host, name)
 				fail = true
 			} else {
 				fmt.Printf("%s canceled\n", name)
