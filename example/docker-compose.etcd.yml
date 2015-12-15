@@ -5,14 +5,7 @@ discovery:
 
 ambassador:
     container_name: ambassador
-    command:
-        - "--addr"
-        - "0.0.0.0:29091"
-        - "--advertise"
-        - "127.0.0.1:29091"
-        - "--prefix"
-        - "/debug/docker/ambd/nodes"
-        - "etcd://127.0.0.1:2379"
+    command: "--addr 0.0.0.0:29091 --cluster debug --advertise 127.0.0.1:29091 etcd://127.0.0.1:2379"
     environment:
         LOG_LEVEL: INFO
     image: jeffjen/ambd
@@ -22,14 +15,7 @@ ambassador:
 
 register:
     container_name: register
-    command:
-        - "--addr"
-        - "0.0.0.0:29092"
-        - "--advertise"
-        - "127.0.0.1:2375"
-        - "--prefix"
-        - "/debug/docker/ambd/nodes"
-        - "etcd://127.0.0.1:2379"
+    command: "--addr 0.0.0.0:29092 --cluster debug --advertise 127.0.0.1:2375 etcd://127.0.0.1:2379"
     image: jeffjen/docker-monitor
     net: host
     ports:
@@ -44,6 +30,7 @@ redis:
     labels:
         service: /srv/redis/debug
         port: "16379"
+        probe_type: "redis"
     net: host
 
 probe:
