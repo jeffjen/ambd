@@ -32,7 +32,7 @@ implemented in each service node.
 ### Why ambd
 - It is a light weight proxy daemon.
 - With runtime configuration client that is intuitive and scriptable.
-- Resiliant to network partition and retry.
+- Resilient to network partition and retry.
 - Docker image available [jeffjen/ambd](https://hub.docker.com/r/jeffjen/ambd/)
 
 Together with [docker](https://www.docker.com/) packaging and network facility,
