@@ -1,7 +1,8 @@
 package service
 
 import (
-	api "github.com/jeffjen/ambd/api"
+	api "github.com/jeffjen/ambd/web/api"
+
 	proxy "github.com/jeffjen/ambd/proxy"
 
 	log "github.com/Sirupsen/logrus"

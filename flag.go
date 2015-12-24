@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	dcli "github.com/jeffjen/go-discovery/cli"

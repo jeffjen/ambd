@@ -1,9 +1,9 @@
 package web
 
 import (
-	api "github.com/jeffjen/ambd/api"
-	srv "github.com/jeffjen/ambd/api/service"
-	d "github.com/jeffjen/go-discovery/info"
+	api "github.com/jeffjen/ambd/web/api"
+	srv "github.com/jeffjen/ambd/web/api/service"
+	dsc "github.com/jeffjen/go-discovery/info"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -12,7 +12,7 @@ func init() {
 	vmux := &api.VarServeMux{}
 	vmux.HandleFunc(`/proxy/(.+)`, srv.ProxyRemove)
 
-	api.GetServeMux().HandleFunc("/info", d.Info)
+	api.GetServeMux().HandleFunc("/info", dsc.Info)
 	api.GetServeMux().HandleFunc("/config", srv.Configure)
 	api.GetServeMux().HandleFunc("/proxy", srv.ProxyHelper)
 	api.GetServeMux().HandleFunc("/proxy/list", srv.ProxyList)

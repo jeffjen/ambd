@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	cli "github.com/codegangsta/cli"
