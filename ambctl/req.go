@@ -15,6 +15,10 @@ import (
 	"time"
 )
 
+const (
+	DefaultTimeout = 3 * time.Second
+)
+
 var (
 	Endpoint []string
 )
@@ -50,7 +54,7 @@ func CreateReq(pflag *arg.Info) (output chan *Response) {
 					body = bytes.NewReader(buf)
 				}
 
-				wk, abort := ctx.WithTimeout(root, 100*time.Millisecond)
+				wk, abort := ctx.WithTimeout(root, DefaultTimeout)
 				defer abort()
 
 				resp, err := ctxhttp.Post(wk, nil, ep+"/proxy", "application/json", body)
@@ -94,7 +98,7 @@ func CancelReq(src string) (output chan *Response) {
 			go func(ep string) {
 				defer wg.Done()
 
-				wk, abort := ctx.WithTimeout(root, 100*time.Millisecond)
+				wk, abort := ctx.WithTimeout(root, DefaultTimeout)
 				defer abort()
 
 				var cli = new(http.Client)
@@ -145,7 +149,7 @@ func ConfigReq(proxycfg string) (output chan *Response) {
 			go func(ep string) {
 				defer wg.Done()
 
-				wk, abort := ctx.WithTimeout(root, 100*time.Millisecond)
+				wk, abort := ctx.WithTimeout(root, DefaultTimeout)
 				defer abort()
 
 				var cli = new(http.Client)
@@ -196,7 +200,7 @@ func InfoReq() (output chan *Response) {
 			go func(ep string) {
 				defer wg.Done()
 
-				wk, abort := ctx.WithTimeout(root, 100*time.Millisecond)
+				wk, abort := ctx.WithTimeout(root, DefaultTimeout)
 				defer abort()
 
 				resp, err := ctxhttp.Get(wk, nil, ep+"/info")
@@ -240,7 +244,7 @@ func ListProxyReq() (output chan *Response) {
 			go func(ep string) {
 				defer wg.Done()
 
-				wk, abort := ctx.WithTimeout(root, 100*time.Millisecond)
+				wk, abort := ctx.WithTimeout(root, DefaultTimeout)
 				defer abort()
 
 				resp, err := ctxhttp.Get(wk, nil, ep+"/proxy/list")
