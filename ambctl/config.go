@@ -9,22 +9,32 @@ import (
 
 func NewConfigCmd() cli.Command {
 	return cli.Command{
-		Name:      "config",
-		Usage:     "Command ambassador to use this config",
+		Name:  "config",
+		Usage: "Command ambassador to use this config",
+		Flags: []cli.Flag{
+			cli.StringFlag{Name: "dsc", Usage: "Discovery service endpoint"},
+		},
 		Action:    config,
 		ArgsUsage: "Key for config value",
 	}
 }
 
 func config(ctx *cli.Context) {
-	var proxycfg []string = ctx.Args()
+	var (
+		proxycfg []string = ctx.Args()
+
+		dsc = ctx.String("dsc")
+	)
 
 	if len(proxycfg) == 0 {
 		fmt.Fprintln(os.Stderr, "Must have exactly one argument")
 		os.Exit(1)
 	}
+	if dsc == "" {
+		dsc = "null"
+	}
 
-	resp, fail := ConfigReq(proxycfg[0]), false
+	resp, fail := ConfigReq(proxycfg[0], dsc), false
 	for ret := range resp {
 		if ret.Err != nil {
 			fmt.Fprintf(os.Stderr, "%s - failed config\n", ret.Host)

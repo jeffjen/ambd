@@ -132,7 +132,7 @@ func CancelReq(src string) (output chan *Response) {
 	return v
 }
 
-func ConfigReq(proxycfg string) (output chan *Response) {
+func ConfigReq(proxycfg, discovery string) (output chan *Response) {
 	var (
 		wg sync.WaitGroup
 
@@ -153,7 +153,7 @@ func ConfigReq(proxycfg string) (output chan *Response) {
 				defer abort()
 
 				var cli = new(http.Client)
-				req, err := http.NewRequest("PUT", ep+"/proxy/app-config?key="+proxycfg, nil)
+				req, err := http.NewRequest("PUT", ep+"/proxy/app-config?key="+proxycfg+"&discovery="+discovery, nil)
 				if err != nil {
 					v <- &Response{Host: ep, Err: err}
 					return
