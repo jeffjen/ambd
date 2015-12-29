@@ -49,18 +49,17 @@ func Ambassador(ctx *cli.Context) {
 		} else {
 			log.WithFields(log.Fields{"err": err}).Fatal("halt")
 		}
+	} else {
+		if cfgkey := proxy.ConfigKey(); cfgkey != "" {
+			proxy.ProxyConfigKey = cfgkey
+		} else if proxycfg != "" {
+			proxy.ProxyConfigKey = proxycfg
+		}
+		if proxyTargets != nil {
+			proxy.Targets = proxyTargets
+		}
+		proxy.Follow()
 	}
-
-	if cfgkey := proxy.ConfigKey(); cfgkey != "" {
-		proxy.ProxyConfigKey = cfgkey
-	} else if proxycfg != "" {
-		proxy.ProxyConfigKey = proxycfg
-	}
-	if proxyTargets != nil {
-		proxy.Targets = proxyTargets
-	}
-
-	proxy.Follow()
 
 	if addr != "" {
 		log.WithFields(log.Fields{"addr": addr}).Info("API endpoint begin")

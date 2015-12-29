@@ -5,7 +5,7 @@ import (
 )
 
 func init() {
-	cli.AppHelpTemplate = `Usage: {{.Name}} {{if .Flags}}[OPTIONS]{{end}} DISCOVERY_URI
+	cli.AppHelpTemplate = `Usage: {{.Name}} {{if .Flags}}[OPTIONS]{{end}} [DISCOVERY_URI]
 
 {{.Usage}}
 
