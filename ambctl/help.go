@@ -18,16 +18,17 @@ Run '{{.Name}} help COMMAND' for more information on a command.
 
 `
 
-	cli.CommandHelpTemplate = `Usage: {{.Name}} {{if .Flags}}[OPTIONS]{{else if .ArgsUsage}}[CONFIG_KEY]{{end}}
+	cli.CommandHelpTemplate = `Usage: {{.Name}}{{if .ArgsUsage}} [CONFIG_KEY]{{end}}{{if .Flags}} [OPTIONS]{{end}}
 
-{{.Usage}}{{if .Flags}}
+{{.Usage}}{{if .ArgsUsage}}
+
+CONFIG - {{.ArgsUsage}}
+{{end}}{{if .Flags}}
 Options:
 	{{range .Flags}}{{.}}
 	{{end}}{{end}}{{if .Subcommands}}
 Commands:
 	{{range .Subcommands}}{{.Name}}{{ "\t " }}{{.Usage}}
-	{{end}}{{end}}{{if .ArgsUsage}}
-
-CONFIG - {{.ArgsUsage}}{{end}}
+	{{end}}{{end}}
 `
 }
