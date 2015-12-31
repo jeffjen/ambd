@@ -133,7 +133,7 @@ func CancelReq(src string) (output chan *Response) {
 	return v
 }
 
-func ConfigReq(proxycfg, discovery, cluster string, proxy2discovery bool) (output chan *Response) {
+func ConfigReq(proxycfg, discovery, cluster string) (output chan *Response) {
 	var (
 		wg sync.WaitGroup
 
@@ -153,12 +153,11 @@ func ConfigReq(proxycfg, discovery, cluster string, proxy2discovery bool) (outpu
 				wk, abort := ctx.WithTimeout(root, DefaultTimeout)
 				defer abort()
 
-				uri := fmt.Sprintf("%s/proxy/app-config?key=%s&discovery=%s&cluster=%s&proxy2discovery=%t",
+				uri := fmt.Sprintf("%s/proxy/app-config?key=%s&discovery=%s&cluster=%s",
 					ep,
 					proxycfg,
 					discovery,
 					cluster,
-					proxy2discovery,
 				)
 				var cli = new(http.Client)
 				req, err := http.NewRequest("PUT", uri, nil)

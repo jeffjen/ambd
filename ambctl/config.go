@@ -14,7 +14,6 @@ func NewConfigCmd() cli.Command {
 		Flags: []cli.Flag{
 			cli.StringFlag{Name: "dsc", Usage: "Discovery service endpoint"},
 			cli.StringFlag{Name: "cluster", Usage: "Set cluster node it belongs to"},
-			cli.BoolFlag{Name: "proxy2discovery", Usage: "Enable proxy to discovery"},
 		},
 		Action:    config,
 		ArgsUsage: "Key for config value",
@@ -27,7 +26,6 @@ func config(ctx *cli.Context) {
 
 		dsc     = ctx.String("dsc")
 		cluster = ctx.String("cluster")
-		enable  = ctx.Bool("proxy2discovery")
 	)
 
 	if len(proxycfg) == 0 {
@@ -38,7 +36,7 @@ func config(ctx *cli.Context) {
 		dsc = "null"
 	}
 
-	resp, fail := ConfigReq(proxycfg[0], dsc, cluster, enable), false
+	resp, fail := ConfigReq(proxycfg[0], dsc, cluster), false
 	for ret := range resp {
 		if ret.Err != nil {
 			fmt.Fprintf(os.Stderr, "%s - failed config\n", ret.Host)
