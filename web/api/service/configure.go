@@ -28,6 +28,8 @@ func Follow(w http.ResponseWriter, r *http.Request) {
 	if proxycfg == "" {
 		http.Error(w, "Bad Request", 400)
 		return
+	} else {
+		proxy.ProxyConfigKey = proxycfg
 	}
 
 	if hbStr := r.Form.Get("hb"); hbStr == "" {
@@ -57,15 +59,14 @@ func Follow(w http.ResponseWriter, r *http.Request) {
 		disc.Cancel() // abort previous session
 	}
 
-	// resume advertising node
-	if discovery != "null" || discovery != "" {
+	// resume advertising node, if we were advertising
+	if discovery != "null" && discovery != "" {
 		disc.Discovery = discovery
 	}
-	disc.Register(heartbeat, ttl)
-
-	// reload config setting
-	proxy.ProxyConfigKey = proxycfg
-	proxy.Follow()
+	if disc.Discovery != "" {
+		disc.Register(heartbeat, ttl)
+		proxy.Follow()
+	}
 
 	w.Write([]byte("done"))
 }
