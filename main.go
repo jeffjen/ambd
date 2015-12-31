@@ -31,6 +31,8 @@ func Ambassador(ctx *cli.Context) {
 
 		proxycfg = ctx.String("proxycfg")
 
+		localproxycfg = proxy.ConfigKey()
+
 		proxyTargets = ctx.StringSlice("proxy")
 
 		stop = make(chan struct{}, 1)
@@ -39,6 +41,9 @@ func Ambassador(ctx *cli.Context) {
 	// setup register path for discovery
 	disc.RegisterPath = path.Join(ctx.String("cluster"), proxy.DiscoveryPath)
 
+	// setup Discovery URI from config
+	proxy.DiscoveryURI()
+
 	if err := dcli.Before(ctx); err != nil { // We don't want to setup discovery
 		if err == dcli.ErrRequireDiscovery {
 			log.WithFields(log.Fields{"err": err}).Warning("discovery feature disabled")
@@ -46,8 +51,8 @@ func Ambassador(ctx *cli.Context) {
 			log.WithFields(log.Fields{"err": err}).Fatal("halt")
 		}
 	} else { // We had successfully setup discovery
-		if cfgkey := proxy.ConfigKey(); cfgkey != "" {
-			proxy.ProxyConfigKey = cfgkey
+		if localproxycfg != "" {
+			proxy.ProxyConfigKey = localproxycfg
 		} else if proxycfg != "" {
 			proxy.ProxyConfigKey = proxycfg
 		}

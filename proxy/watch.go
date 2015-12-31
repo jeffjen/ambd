@@ -37,6 +37,17 @@ func splitDiscovery() (dst []string) {
 	return strings.Split(strings.TrimPrefix(disc.Discovery, "etcd://"), ",")
 }
 
+func DiscoveryURI() {
+	if buf, err := ioutil.ReadFile(".discovery"); err == nil {
+		disc.Discovery = string(buf)
+	}
+	go func() {
+		for _ = range time.Tick(2 * time.Minute) {
+			ioutil.WriteFile(".discovery", []byte(disc.Discovery), 0644)
+		}
+	}()
+}
+
 func ConfigKey() string {
 	var cfgkey string
 	if buf, err := ioutil.ReadFile(".proxycfg"); err == nil {
