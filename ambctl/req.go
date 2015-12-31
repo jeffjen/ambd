@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"sync"
@@ -132,7 +133,7 @@ func CancelReq(src string) (output chan *Response) {
 	return v
 }
 
-func ConfigReq(proxycfg, discovery string) (output chan *Response) {
+func ConfigReq(proxycfg, discovery, cluster string, proxy2discovery bool) (output chan *Response) {
 	var (
 		wg sync.WaitGroup
 
@@ -152,8 +153,15 @@ func ConfigReq(proxycfg, discovery string) (output chan *Response) {
 				wk, abort := ctx.WithTimeout(root, DefaultTimeout)
 				defer abort()
 
+				uri := fmt.Sprintf("%s/proxy/app-config?key=%s&discovery=%s&cluster=%s&proxy2discovery=%t",
+					ep,
+					proxycfg,
+					discovery,
+					cluster,
+					proxy2discovery,
+				)
 				var cli = new(http.Client)
-				req, err := http.NewRequest("PUT", ep+"/proxy/app-config?key="+proxycfg+"&discovery="+discovery, nil)
+				req, err := http.NewRequest("PUT", uri, nil)
 				if err != nil {
 					v <- &Response{Host: ep, Err: err}
 					return

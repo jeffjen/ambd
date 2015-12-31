@@ -13,10 +13,6 @@ import (
 	"path"
 )
 
-const (
-	DiscoveryPath = "/docker/ambd/nodes"
-)
-
 func main() {
 	app := cli.NewApp()
 	app.Name = "ambd"
@@ -41,7 +37,7 @@ func Ambassador(ctx *cli.Context) {
 	)
 
 	// setup register path for discovery
-	disc.RegisterPath = path.Join(ctx.String("cluster"), DiscoveryPath)
+	disc.RegisterPath = path.Join(ctx.String("cluster"), proxy.DiscoveryPath)
 
 	if err := dcli.Before(ctx); err != nil { // We don't want to setup discovery
 		if err == dcli.ErrRequireDiscovery {

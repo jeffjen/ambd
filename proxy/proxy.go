@@ -12,6 +12,10 @@ import (
 	"errors"
 )
 
+const (
+	DiscoveryPath = "/docker/ambd/nodes"
+)
+
 var (
 	ErrProxyExist = errors.New("proxy exist")
 

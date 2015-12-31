@@ -7,6 +7,8 @@ import (
 	_ "github.com/Sirupsen/logrus"
 
 	"net/http"
+	"path"
+	"strconv"
 	"time"
 )
 
@@ -17,9 +19,11 @@ func Follow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		proxycfg = r.Form.Get("key")
-
 		discovery = r.Form.Get("discovery")
+		cluster   = r.Form.Get("cluster")
+
+		proxycfg        = r.Form.Get("key")
+		proxy2discovery = r.Form.Get("proxy2discovery")
 
 		heartbeat time.Duration
 		ttl       time.Duration
@@ -62,6 +66,14 @@ func Follow(w http.ResponseWriter, r *http.Request) {
 	// resume advertising node, if we were advertising
 	if discovery != "null" && discovery != "" {
 		disc.Discovery = discovery
+	}
+	if cluster != "null" && cluster != "" {
+		disc.RegisterPath = path.Join(cluster, proxy.DiscoveryPath)
+	}
+	if yes, err := strconv.ParseBool(proxy2discovery); err != nil {
+		proxy.EnableDiscoveryProxy = false
+	} else {
+		proxy.EnableDiscoveryProxy = yes
 	}
 	if disc.Discovery != "" {
 		disc.Register(heartbeat, ttl)
