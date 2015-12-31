@@ -43,13 +43,13 @@ func Ambassador(ctx *cli.Context) {
 	// setup register path for discovery
 	disc.RegisterPath = path.Join(ctx.String("cluster"), DiscoveryPath)
 
-	if err := dcli.Before(ctx); err != nil {
+	if err := dcli.Before(ctx); err != nil { // We don't want to setup discovery
 		if err == dcli.ErrRequireDiscovery {
 			log.WithFields(log.Fields{"err": err}).Warning("discovery feature disabled")
 		} else {
 			log.WithFields(log.Fields{"err": err}).Fatal("halt")
 		}
-	} else {
+	} else { // We had successfully setup discovery
 		if cfgkey := proxy.ConfigKey(); cfgkey != "" {
 			proxy.ProxyConfigKey = cfgkey
 		} else if proxycfg != "" {
@@ -58,6 +58,7 @@ func Ambassador(ctx *cli.Context) {
 		if proxyTargets != nil {
 			proxy.Targets = proxyTargets
 		}
+		proxy.EnableDiscoveryProxy = ctx.Bool("proxy2discovery")
 		proxy.Follow()
 	}
 

@@ -11,6 +11,7 @@ import (
 
 	"encoding/json"
 	"io/ioutil"
+	"strings"
 	"time"
 )
 
@@ -21,6 +22,20 @@ var (
 
 	retry = &proxy.Backoff{}
 )
+
+var (
+	EnableDiscoveryProxy bool
+
+	DiscoveryProxyInfo = &Info{
+		Name: "discovery",
+		Net:  "tcp4",
+		From: ":2379",
+	}
+)
+
+func splitDiscovery() (dst []string) {
+	return strings.Split(strings.TrimPrefix(disc.Discovery, "etcd://"), ",")
+}
 
 func ConfigKey() string {
 	var cfgkey string
@@ -77,6 +92,15 @@ func reload(pxycfg []*Info) {
 	log.WithFields(log.Fields{"count": len(pxycfg)}).Debug("reload from cfgkey")
 	for _, meta := range pxycfg {
 		if err := Listen(meta); err != nil {
+			if err != ErrProxyExist {
+				log.WithFields(log.Fields{"err": err}).Debug("reload")
+			}
+		}
+	}
+	if EnableDiscoveryProxy {
+		log.Debug("reload discovery proxy")
+		DiscoveryProxyInfo.To = splitDiscovery()
+		if err := Listen(DiscoveryProxyInfo); err != nil {
 			if err != ErrProxyExist {
 				log.WithFields(log.Fields{"err": err}).Debug("reload")
 			}

@@ -25,6 +25,10 @@ var (
 			Name:  "proxy",
 			Usage: "Proxy specification on startup",
 		},
+		cli.BoolFlag{
+			Name:  "proxy2discovery",
+			Usage: "Direct ambassador to setup proxy for discovery",
+		},
 	}
 )
 
