@@ -1,6 +1,6 @@
 ambassador:
     container_name: ambassador
-    command: "--addr 0.0.0.0:29091"
+    command: "--addr 0.0.0.0:29091 --advertise 127.0.0.1:29091"
     environment:
         LOG_LEVEL: INFO
     image: jeffjen/ambd
